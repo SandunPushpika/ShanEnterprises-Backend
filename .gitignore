@@ -1,0 +1,125 @@
+## ===============================
+## Build results
+## ===============================
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+## Build artifacts
+*.dll
+*.exe
+*.pdb
+*.cache
+*.log
+
+## ===============================
+## Visual Studio / Rider / VS Code
+## ===============================
+.vs/
+.vscode/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+## Rider
+.idea/
+
+## ===============================
+## .NET Core publish output
+## ===============================
+publish/
+*.publishsettings
+
+## ===============================
+## NuGet packages
+## ===============================
+*.nupkg
+*.snupkg
+**/packages/*
+!**/packages/build/
+
+## NuGet fallback folder
+.nuget/
+
+## ===============================
+## EF Core
+## ===============================
+Migrations/*Designer.cs
+Migrations/*Snapshot.cs
+*.db
+*.sqlite
+*.sqlite3
+
+## ===============================
+## Secrets & environment files
+## ===============================
+appsettings.Development.json
+appsettings.Production.json
+appsettings.Staging.json
+
+.env
+.env.*
+secrets.json
+secrets.*.json
+
+## User secrets (dotnet user-secrets)
+secrets/
+
+## ===============================
+## Logs & temp files
+## ===============================
+*.log
+*.tmp
+*.temp
+*.bak
+
+## ===============================
+## OS files
+## ===============================
+.DS_Store
+Thumbs.db
+
+## ===============================
+## Test results
+## ===============================
+TestResults/
+coverage/
+*.coverage
+*.coveragexml
+
+## ===============================
+## Docker
+## ===============================
+docker-compose.override.yml
+
+## ===============================
+## Angular/React (if used in frontend)
+## ===============================
+node_modules/
+dist/
+build/
+
+## ===============================
+## Azure / CI/CD
+## ===============================
+azure-pipelines.yml.cache
+
+## ===============================
+## JetBrains / Resharper
+## ===============================
+_ReSharper*/
+*.DotSettings.user
+
+## ===============================
+## Local HTTPS certs
+## ===============================
+*.pfx
+*.key
+*.crt
+
+.env
+.env.*
+**/.env
+**/.env.*
