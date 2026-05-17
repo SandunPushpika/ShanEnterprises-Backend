@@ -41,11 +41,14 @@ git push
 ## Step 4: Create a Pull Request (PR)
 
 Once your changes are pushed, you will see an option like:
+<img width="777" height="571" alt="image" src="https://github.com/user-attachments/assets/af74b24e-c291-42f5-b0a3-aba375e29d13" />
 
 
 **Compare & Pull Request**
 
 Click on it to create your Pull Request.
+<img width="1075" height="621" alt="image" src="https://github.com/user-attachments/assets/89da207e-1463-4432-af24-e005fa4758ef" />
+
 
 Add a proper description and submit the PR.
 
