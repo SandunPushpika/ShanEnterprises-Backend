@@ -22,9 +22,11 @@ var appSettings = builder.Configuration.GetSection("AppSettings").Get<AppSetting
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddControllers();
 builder.Services.AddDatabaseConfig(appSettings.DefaultConnection);
 builder.Services.AddRequiredServices();
+builder.Services.AddControllers().ConfigureControllers();
+    
+
 
 var app = builder.Build();
 
@@ -34,8 +36,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
 app.UseMiddleware<ExceptionMiddleware>();
+app.UseHttpsRedirection();
 
 app.MapControllers();
 

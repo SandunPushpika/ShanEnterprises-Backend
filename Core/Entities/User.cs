@@ -1,8 +1,10 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using Core.Enums;
 
 namespace Core.Entities;
 
+[Table("users")]
 public class User
 {
     [Key]
@@ -10,14 +12,11 @@ public class User
     
     [Required, MaxLength(100)]
     public string FirstName { get; set; } = null!;
-
-    [Required, MaxLength(100)]
     public string LastName { get; set; } = null!;
 
     [Required, MaxLength(255)]
     public string Email { get; set; } = null!;
 
-    [Required, MaxLength(20)]
     public string PhoneNumber { get; set; } = null!;
 
     [Required]
@@ -40,7 +39,7 @@ public class User
 
     public bool EmailVerified { get; set; } = false;
 
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; }
 
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 }

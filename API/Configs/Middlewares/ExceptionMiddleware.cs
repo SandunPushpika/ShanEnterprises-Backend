@@ -1,6 +1,7 @@
 using System.Net;
 using System.Text.Json;
 using Core.DTOs.Response;
+using FluentValidation;
 using Exception = System.Exception;
 
 namespace ShanEnterprises.Configs.Middlewares;
@@ -22,15 +23,19 @@ public class ExceptionMiddleware
         {
             await _next(context);
         }
+        catch (ValidationException ex)
+        {
+            await HandleExceptionAsync(context, ex.Errors.FirstOrDefault()?.ErrorMessage);
+        }
         catch (Exception ex)
         {
-            await HandleExceptionAsync(context, ex);
+            await HandleExceptionAsync(context, ex.Message);
         }
     }
 
-    private async Task HandleExceptionAsync(HttpContext context, Exception exception)
+    private async Task HandleExceptionAsync(HttpContext context, string? errorMessage)
     {
-        var message = new ApiResponse(exception.Message, false);
+        var message = new ApiResponse(errorMessage, false);
         var serializedMessage = JsonSerializer.Serialize(message);
         
         context.Response.ContentType = "application/json";
