@@ -52,13 +52,6 @@ Migrations/*Snapshot.cs
 *.sqlite
 *.sqlite3
 
-## ===============================
-## Secrets & environment files
-## ===============================
-appsettings.Development.json
-appsettings.Production.json
-appsettings.Staging.json
-
 .env
 .env.*
 secrets.json
