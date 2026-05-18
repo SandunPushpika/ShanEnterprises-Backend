@@ -1,3 +1,5 @@
+using Application.Interfaces.Services;
+using Application.Services;
 using Core.Helpers;
 using DotNetEnv;
 using ShanEnterprises.Configs.Extensions;
@@ -25,6 +27,8 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDatabaseConfig(appSettings.DefaultConnection);
 builder.Services.AddRequiredServices();
 builder.Services.AddControllers().ConfigureControllers();
+builder.Services.AddScoped<IUserService, UserService>();
+
     
 
 
