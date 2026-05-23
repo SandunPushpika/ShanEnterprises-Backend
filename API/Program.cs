@@ -23,8 +23,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.Configure<AppSettings>(builder.Configuration.GetSection("AppSettings"));
 var appSettings = builder.Configuration.GetSection("AppSettings").Get<AppSettings>();
 
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+
+builder.Services.AddSwaggerConfig();
 builder.Services.AddDatabaseConfig(appSettings.DefaultConnection);
 builder.Services.AddRequiredServices();
 builder.Services.AddControllers().ConfigureControllers();

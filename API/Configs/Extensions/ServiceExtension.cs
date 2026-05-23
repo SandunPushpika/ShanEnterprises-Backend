@@ -15,6 +15,7 @@ using Application.Mappers;
 using Core.Helpers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 
 namespace ShanEnterprises.Configs.Extensions;
 
@@ -86,5 +87,43 @@ public static class ServiceExtension
                 };
             });
         services.AddAuthorization();
+    }
+
+    public static void AddSwaggerConfig(this IServiceCollection services)
+    {
+        services.AddEndpointsApiExplorer();
+        services.AddSwaggerGen(c =>
+        {
+            c.SwaggerDoc("v1", new OpenApiInfo
+            {
+                Title = "API Documentation",
+                Version = "v1"
+            });
+
+            c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+            {
+                Name = "Authorization",
+                Type = SecuritySchemeType.Http,
+                Scheme = "bearer",
+                BearerFormat = "JWT",
+                In = ParameterLocation.Header,
+                Description = "Enter JWT token like this: Bearer {your token}"
+            });
+
+            c.AddSecurityRequirement(new OpenApiSecurityRequirement
+            {
+                {
+                    new OpenApiSecurityScheme
+                    {
+                        Reference = new OpenApiReference
+                        {
+                            Type = ReferenceType.SecurityScheme,
+                            Id = "Bearer"
+                        }
+                    },
+                    new string[] {}
+                }
+            });
+        });
     }
 }
