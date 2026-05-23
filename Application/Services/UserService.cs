@@ -1,7 +1,7 @@
 using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
-using Core.DTOs.Request;
 using Core.DTOs.Request.Auth;
+using Core.DTOs.Response;
 using Core.Entities;
 
 namespace Application.Services;
@@ -14,15 +14,16 @@ public class UserService : IUserService
     {
         _userRepository = userRepository;
     }
-
-    // view profile
-    public async Task<User?> GetUserByIdAsync(int id)
+    public async Task<UserResponse?> GetUserByIdAsync(int id)
     {
-        return await _userRepository.GetUserByIdAsync(id);
-    }
+        var user = await _userRepository.GetUserByIdAsync(id);
 
-    // update user profile
-    public async Task<User> UpdateUserAsync(UserUpdateRequest request)
+        if (user == null)
+            return null;
+        
+        return MapToResponse(user);
+    }
+    public async Task<UserResponse> UpdateUserAsync(UserUpdateRequest request)
     {
         var user = await _userRepository.GetUserByIdAsync(request.Id);
 
@@ -33,6 +34,18 @@ public class UserService : IUserService
         user.LastName = request.LastName;
         user.Email = request.Email;
 
-        return await _userRepository.UpdateUserAsync(user);
+        var updatedUser = await _userRepository.UpdateUserAsync(user);
+
+        return MapToResponse(updatedUser);
+    }
+    private static UserResponse MapToResponse(User user)
+    {
+        return new UserResponse
+        {
+            Id = user.Id,
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            Email = user.Email
+        };
     }
 }

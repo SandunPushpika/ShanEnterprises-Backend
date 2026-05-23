@@ -1,4 +1,5 @@
 using Application.Interfaces.Repositories;
+using Core.DTOs.Response;
 using Core.Entities;
 using Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
@@ -19,14 +20,10 @@ public class UserRepository(AppDbContext context) : IUserRepository
     {
         return await context.Users.FirstOrDefaultAsync(x => x.Email == email);
     }
-
-     
     public async Task<User?> GetUserByIdAsync(int id)
     {
         return await context.Users.FirstOrDefaultAsync(x => x.Id == id);
     }
-
-    
     public async Task<User> UpdateUserAsync(User user)
     {
         context.Users.Update(user);
