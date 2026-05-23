@@ -16,21 +16,21 @@ public class UserController : ControllerBase
     }
     
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetUserById(int id)
+    public async Task<ActionResult<ApiResponse>> GetUserById(int id)
     {
         var user = await _userService.GetUserByIdAsync(id);
 
         if (user == null)
-            return NotFound(new ApiResponse("User not found",success: false));
+            return new ApiResponse("User not found",success: false);
 
-        return Ok(new ApiResponse("", data: user));
+        return new ApiResponse("", data: user);
     }
     
-    [HttpPost("updateUserDetails")]
-    public async Task<IActionResult> UpdateUserDetails([FromBody] UserUpdateRequest request)
+    [HttpPut]
+    public async Task<ActionResult<ApiResponse>> UpdateUserDetails([FromBody] UserUpdateRequest request)
     {
         var updatedUser = await _userService.UpdateUserAsync(request);
 
-        return Ok(new ApiResponse("User updated successfully", data: updatedUser));
+        return new ApiResponse("User updated successfully", data: updatedUser);
     }
 }

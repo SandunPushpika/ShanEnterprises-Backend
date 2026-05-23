@@ -14,15 +14,14 @@ public class UserService : IUserService
     {
         _userRepository = userRepository;
     }
+    
     public async Task<UserResponse?> GetUserByIdAsync(int id)
     {
         var user = await _userRepository.GetUserByIdAsync(id);
 
-        if (user == null)
-            return null;
-        
-        return MapToResponse(user);
+        return user == null ? null : MapToResponse(user);
     }
+    
     public async Task<UserResponse> UpdateUserAsync(UserUpdateRequest request)
     {
         var user = await _userRepository.GetUserByIdAsync(request.Id);
@@ -33,11 +32,14 @@ public class UserService : IUserService
         user.FirstName = request.FirstName;
         user.LastName = request.LastName;
         user.Email = request.Email;
+        user.UpdatedAt = DateTime.UtcNow;
+        user.CreatedAt = DateTime.SpecifyKind(user.CreatedAt, DateTimeKind.Utc);
 
         var updatedUser = await _userRepository.UpdateUserAsync(user);
 
         return MapToResponse(updatedUser);
     }
+    
     private static UserResponse MapToResponse(User user)
     {
         return new UserResponse

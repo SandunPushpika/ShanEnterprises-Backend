@@ -26,6 +26,7 @@ public static class ServiceExtension
     private static void AddServices(this IServiceCollection services)
     {
         services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IUserService, UserService>();
         //Register all services here
     }
     
