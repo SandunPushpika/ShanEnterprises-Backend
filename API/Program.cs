@@ -32,8 +32,6 @@ builder.Services.AddRequiredServices();
 builder.Services.AddControllers().ConfigureControllers();
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<UserUpdateRequestValidator>();
-    
-
 
 var app = builder.Build();
 
