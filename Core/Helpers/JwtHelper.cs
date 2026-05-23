@@ -19,7 +19,7 @@ public static class JwtHelper
             claims = claims.Concat(new[]
             {
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                new Claim("role", user.Role.ToString())
+                new Claim(ClaimTypes.Role, user.Role.ToString())
             }).ToArray();
         }
         

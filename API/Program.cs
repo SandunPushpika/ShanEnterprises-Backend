@@ -1,5 +1,3 @@
-using Application.Interfaces.Services;
-using Application.Services;
 using Core.Helpers;
 using Core.Validators;
 using DotNetEnv;
@@ -32,6 +30,8 @@ builder.Services.AddRequiredServices();
 builder.Services.AddControllers().ConfigureControllers();
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<UserUpdateRequestValidator>();
+builder.Services.AddAuthenticationConfig(appSettings.JwtSettings);
+builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
 
@@ -45,5 +45,8 @@ app.UseMiddleware<ExceptionMiddleware>();
 app.UseHttpsRedirection();
 
 app.MapControllers();
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.Run();

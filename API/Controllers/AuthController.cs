@@ -1,10 +1,12 @@
 using Application.Interfaces.Services;
 using Core.DTOs.Request.Auth;
 using Core.DTOs.Response;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ShanEnterprises.Controllers;
 
+[AllowAnonymous]
 [ApiController]
 [Route("api/[controller]")]
 public class AuthController(IAuthService authService) : Controller

@@ -1,4 +1,6 @@
 using System.Reflection;
+using System.Security.Claims;
+using System.Text;
 using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
 using Application.Repositories;
@@ -10,6 +12,10 @@ using FluentValidation.AspNetCore;
 using Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
 using Application.Mappers;
+using Core.Helpers;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.IdentityModel.Tokens;
+
 namespace ShanEnterprises.Configs.Extensions;
 
 public static class ServiceExtension
@@ -28,6 +34,7 @@ public static class ServiceExtension
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IVehicleService, VehicleService>();
+        services.AddScoped<IContextService, ContextService>();
         //Register all services here
     }
     
@@ -59,5 +66,25 @@ public static class ServiceExtension
                 });
             options.UseSnakeCaseNamingConvention();
         });
+    }
+
+    public static void AddAuthenticationConfig(this IServiceCollection services, JwtSettings jwtSettings)
+    {
+        services.AddAuthentication("Bearer")
+            .AddJwtBearer("Bearer", options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = jwtSettings.Issuer,
+                    ValidAudience = jwtSettings.Audience,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.SecurityKey)),
+                    RoleClaimType = ClaimTypes.Role
+                };
+            });
+        services.AddAuthorization();
     }
 }
