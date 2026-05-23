@@ -27,12 +27,14 @@ public static class ServiceExtension
     {
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IUserService, UserService>();
+        services.AddScoped<IVehicleService, VehicleService>();
         //Register all services here
     }
     
     private static void AddRepositories(this IServiceCollection services)
     {
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IVehicleRepository, VehicleRepository>();
         //Register all repositories here
     }
 
@@ -51,6 +53,9 @@ public static class ServiceExtension
                 {
                     o.MapEnum<UserRole>("user_role");
                     o.MapEnum<UserStatus>("user_status");
+                    o.MapEnum<VehicleStatus>("vehicle_status");
+                    o.MapEnum<FuelType>("fuel_type");
+                    o.MapEnum<TransmissionType>("transmission_type");
                 });
             options.UseSnakeCaseNamingConvention();
         });

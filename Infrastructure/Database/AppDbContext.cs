@@ -7,6 +7,7 @@ namespace Infrastructure.Database;
 public class AppDbContext : DbContext
 {
     public DbSet<User> Users { get; set; }
+    public DbSet<Vehicle> Vehicles { get; set; }
     
     public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options)
@@ -16,7 +17,11 @@ public class AppDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+        modelBuilder.HasPostgresEnum<FuelType>();
 
+        modelBuilder.HasPostgresEnum<TransmissionType>();
+
+        modelBuilder.HasPostgresEnum<VehicleStatus>();
         modelBuilder.HasPostgresEnum<UserRole>("user_role");
         modelBuilder.HasPostgresEnum<UserStatus>("user_status");
     }
