@@ -25,8 +25,6 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDatabaseConfig(appSettings.DefaultConnection);
 builder.Services.AddRequiredServices();
 builder.Services.AddControllers().ConfigureControllers();
-    
-
 
 var app = builder.Build();
 
