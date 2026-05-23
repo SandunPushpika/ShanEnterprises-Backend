@@ -1,7 +1,10 @@
 using Application.Interfaces.Services;
 using Application.Services;
 using Core.Helpers;
+using Core.Validators;
 using DotNetEnv;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using ShanEnterprises.Configs.Extensions;
 using ShanEnterprises.Configs.Middlewares;
 
@@ -28,7 +31,8 @@ builder.Services.AddDatabaseConfig(appSettings.DefaultConnection);
 builder.Services.AddRequiredServices();
 builder.Services.AddControllers().ConfigureControllers();
 builder.Services.AddScoped<IUserService, UserService>();
-
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddValidatorsFromAssemblyContaining<UserUpdateRequestValidator>();
     
 
 
