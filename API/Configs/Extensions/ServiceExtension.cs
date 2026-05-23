@@ -9,7 +9,7 @@ using FluentValidation;
 using FluentValidation.AspNetCore;
 using Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
-
+using Application.Mappers;
 namespace ShanEnterprises.Configs.Extensions;
 
 public static class ServiceExtension
@@ -19,7 +19,8 @@ public static class ServiceExtension
         services.AddRepositories();
         services.AddServices();
         services.RegisterValidators();
-        
+        // services.AddAutoMapper(cfg => { }, typeof(MappingProfile));      
+        services.AddAutoMapper(cfg => { }, typeof(MappingProfile)); 
         return services;
     }
 
