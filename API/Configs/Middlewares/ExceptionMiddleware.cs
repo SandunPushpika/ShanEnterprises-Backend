@@ -29,6 +29,7 @@ public class ExceptionMiddleware
         }
         catch (Exception ex)
         {
+            _logger.LogError(ex.Message);
             await HandleExceptionAsync(context, ex.Message);
         }
     }

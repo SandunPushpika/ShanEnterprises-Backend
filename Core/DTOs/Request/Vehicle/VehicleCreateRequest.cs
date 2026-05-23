@@ -4,7 +4,6 @@ namespace Core.DTOs.Request;
 
 public class VehicleCreateRequest
 {
-    
     public int? BrandId { get; set; }
     public int? TypeId { get; set; }
     
@@ -29,6 +28,4 @@ public class VehicleCreateRequest
     public bool AirConditioned { get; set; } = true;
     public bool HasBluetooth { get; set; } = false;
     public bool HasGps { get; set; } = false;
-
-    public VehicleStatus Status { get; set; } = VehicleStatus.AVAILABLE;
 }
