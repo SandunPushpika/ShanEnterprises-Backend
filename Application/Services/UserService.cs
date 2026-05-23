@@ -1,5 +1,6 @@
 using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
+using AutoMapper;
 using Core.DTOs.Request.Auth;
 using Core.DTOs.Response;
 using Core.Entities;
@@ -9,10 +10,12 @@ namespace Application.Services;
 public class UserService : IUserService
 {
     private readonly IUserRepository _userRepository;
+    private readonly IMapper _mapper;
 
-    public UserService(IUserRepository userRepository)
+    public UserService(IUserRepository userRepository, IMapper mapper)
     {
         _userRepository = userRepository;
+        _mapper = mapper;
     }
     
     public async Task<UserResponse?> GetUserByIdAsync(int id)
@@ -40,14 +43,8 @@ public class UserService : IUserService
         return MapToResponse(updatedUser);
     }
     
-    private static UserResponse MapToResponse(User user)
+    private UserResponse MapToResponse(User user)
     {
-        return new UserResponse
-        {
-            Id = user.Id,
-            FirstName = user.FirstName,
-            LastName = user.LastName,
-            Email = user.Email
-        };
+        return _mapper.Map<UserResponse>(user);
     }
 }

@@ -1,5 +1,6 @@
 using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
+using AutoMapper;
 using Core.DTOs.Request.Auth;
 using Core.DTOs.Response.Auth;
 using Core.Entities;
@@ -11,10 +12,12 @@ namespace Application.Services;
 public class AuthService : IAuthService
 {
     private readonly IUserRepository _userRepository;
+    private readonly IMapper _mapper;
 
-    public AuthService(IUserRepository userRepository)
+    public AuthService(IUserRepository userRepository, IMapper mapper)
     {
         _userRepository = userRepository;
+        _mapper = mapper;
     }
     
     public async Task RegisterUser(CreateUserRequest request)
@@ -23,17 +26,11 @@ public class AuthService : IAuthService
         if (existingUser != null)
             throw new UserAlreadyExistsException(request.Email);
         
-        var user = new User()
-        {
-            Email = request.Email.ToLower(),
-            PasswordHash = PasswordHasher.HashPassword(request.Password),
-            FirstName = request.FirstName,
-            LastName = request.LastName,
-            Role = request.Role,
-            EmailVerified = false,
-            CreatedAt = DateTime.UtcNow,
-        };
-        
+        var user = _mapper.Map<User>(request);
+        user.CreatedAt = DateTime.UtcNow;
+        user.PasswordHash = PasswordHasher.HashPassword(request.Password);
+        user.EmailVerified = false;
+
         await _userRepository.AddUserAsync(user);
     }
 
