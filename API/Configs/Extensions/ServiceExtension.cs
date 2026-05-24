@@ -13,6 +13,8 @@ using Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
 using Application.Mappers;
 using Core.Helpers;
+using Infrastructure.Interfaces;
+using Infrastructure.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -36,6 +38,7 @@ public static class ServiceExtension
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IVehicleService, VehicleService>();
         services.AddScoped<IContextService, ContextService>();
+        services.AddScoped<IEmailService, EmailService>();
         //Register all services here
     }
     
