@@ -15,5 +15,5 @@ public class CreateUserRequestValidator : AbstractValidator<CreateUserRequest>
         RuleFor(user => user.Password)
             .NotEmpty()
             .WithMessage("Password is Invalid");
-    }    
+    }
 }

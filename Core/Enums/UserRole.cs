@@ -7,9 +7,9 @@ public enum UserRole
     [PgName("ADMIN")]
     ADMIN,
     
-    [PgName("ADMIN")]
+    [PgName("CUSTOMER")]
     CUSTOMER,
     
-    [PgName("ADMIN")]
+    [PgName("DRIVER")]
     DRIVER
 }

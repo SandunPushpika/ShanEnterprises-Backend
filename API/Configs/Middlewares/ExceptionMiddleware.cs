@@ -1,6 +1,7 @@
 using System.Net;
 using System.Text.Json;
 using Core.DTOs.Response;
+using Core.Exceptions.Auth;
 using FluentValidation;
 using Exception = System.Exception;
 
@@ -27,8 +28,17 @@ public class ExceptionMiddleware
         {
             await HandleExceptionAsync(context, ex.Errors.FirstOrDefault()?.ErrorMessage);
         }
+        catch (UnauthorizedUserException ex)
+        {
+            await HandleUnAuthorizedExceptionAsync(context);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            await HandleUnAuthorizedExceptionAsync(context);
+        }
         catch (Exception ex)
         {
+            _logger.LogError(ex.Message);
             await HandleExceptionAsync(context, ex.Message);
         }
     }
@@ -41,5 +51,12 @@ public class ExceptionMiddleware
         context.Response.ContentType = "application/json";
         context.Response.StatusCode = (int) HttpStatusCode.BadRequest;
         await context.Response.WriteAsync(serializedMessage);
+    }
+
+    private async Task HandleUnAuthorizedExceptionAsync(HttpContext context)
+    {
+        context.Response.ContentType = "application/json";
+        context.Response.StatusCode = (int) HttpStatusCode.Unauthorized;
+        await context.Response.WriteAsync(JsonSerializer.Serialize(new ApiResponse("Please login again to continue", false)));
     }
 }

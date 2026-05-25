@@ -17,7 +17,7 @@ public class User
     [Required, MaxLength(255)]
     public string Email { get; set; } = null!;
 
-    public string PhoneNumber { get; set; } = null!;
+    public string? PhoneNumber { get; set; }
 
     [Required]
     public string PasswordHash { get; set; } = null!;

@@ -1,5 +1,8 @@
 using Core.Helpers;
+using Core.Validators;
 using DotNetEnv;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using ShanEnterprises.Configs.Extensions;
 using ShanEnterprises.Configs.Middlewares;
 
@@ -20,13 +23,15 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.Configure<AppSettings>(builder.Configuration.GetSection("AppSettings"));
 var appSettings = builder.Configuration.GetSection("AppSettings").Get<AppSettings>();
 
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+
+builder.Services.AddSwaggerConfig();
 builder.Services.AddDatabaseConfig(appSettings.DefaultConnection);
 builder.Services.AddRequiredServices();
 builder.Services.AddControllers().ConfigureControllers();
-    
-
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddValidatorsFromAssemblyContaining<UserUpdateRequestValidator>();
+builder.Services.AddAuthenticationConfig(appSettings.JwtSettings);
+builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
 
@@ -40,5 +45,8 @@ app.UseMiddleware<ExceptionMiddleware>();
 app.UseHttpsRedirection();
 
 app.MapControllers();
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.Run();
