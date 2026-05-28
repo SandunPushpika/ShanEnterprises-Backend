@@ -124,7 +124,7 @@ public class AuthService : IAuthService
         var verificationCode = new VerificationCodes()
         {
             UserId = userId,
-            ExpiresAt = DateTime.UtcNow.AddMinutes(5),
+            ExpiresAt = DateTime.UtcNow.AddMinutes(10),
             VerificationCode = new Random().Next(1000000, 10000000).ToString(),
             IsUsed = false
         };
