@@ -36,4 +36,18 @@ public class AuthController(IAuthService authService) : Controller
         var response = await authService.RefreshToken(refreshToken);
         return new ApiResponse("Successfully refreshed user", data: response);
     }
+
+    [HttpGet("verify-code")]
+    public async Task<ActionResult<ApiResponse>> VerifyCode(string code)
+    {
+        await authService.VerifyCode(code);
+        return new ApiResponse("Verification Successful!");
+    }
+
+    [HttpGet("resend-verification-code")]
+    public async Task<ActionResult<ApiResponse>> ResendVerificationCode(string email)
+    {
+        await authService.ResendVerificationCode(email);
+        return new ApiResponse("Verification Code Sent!");
+    }
 }

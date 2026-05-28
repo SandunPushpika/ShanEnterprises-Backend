@@ -3,6 +3,7 @@ namespace Core.Helpers;
 public class AppSettings
 {
     public string DefaultConnection { get; set; }
+    public string AdminKeyCode { get; set; }
     public JwtSettings JwtSettings { get; set; }
     public MailSettings MailSettings { get; set; }
 }

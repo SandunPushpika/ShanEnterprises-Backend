@@ -46,6 +46,7 @@ public static class ServiceExtension
     {
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IVehicleRepository, VehicleRepository>();
+        services.AddScoped<IVerificationCodeRepository, VerificationCodeRepository>();
         //Register all repositories here
     }
 

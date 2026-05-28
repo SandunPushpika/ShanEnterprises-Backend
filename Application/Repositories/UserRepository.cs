@@ -9,10 +9,11 @@ namespace Application.Repositories;
 public class UserRepository(AppDbContext context) : IUserRepository
 {
     
-    public async Task AddUserAsync(User user)
+    public async Task<User> AddUserAsync(User user)
     {
-        await context.Users.AddAsync(user);
+        var newUser = await context.Users.AddAsync(user);
         await context.SaveChangesAsync();
+        return newUser.Entity;
     }
 
    

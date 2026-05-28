@@ -8,5 +8,6 @@ public class CreateUserRequest
     public string Password { get; set; }
     public string FirstName { get; set; }
     public string? LastName { get; set; }
+    public string? KeyCode { get; set; }
     public UserRole Role { get; set; }
 }

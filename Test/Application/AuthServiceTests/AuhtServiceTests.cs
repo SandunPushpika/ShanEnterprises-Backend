@@ -45,6 +45,10 @@ public partial class AuthServiceTests
             Email = "new@test.com",
             Password = "123456"
         };
+        var user = new User()
+        {
+            Id = 1
+        };
 
         _userRepositoryMock
             .Setup(x => x.GetUserByEmailAsync(request.Email.ToLower()))
@@ -56,7 +60,7 @@ public partial class AuthServiceTests
 
         _userRepositoryMock
             .Setup(x => x.AddUserAsync(It.IsAny<User>()))
-            .Returns(Task.CompletedTask);
+            .Returns(Task.FromResult(user));
 
         // Act
         await _authService.RegisterUser(request);

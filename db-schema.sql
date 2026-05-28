@@ -352,6 +352,16 @@ CREATE TABLE budget_estimations (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE verification_codes (
+    id SERIAL PRIMARY KEY,
+    
+    user_id INTEGER REFERENCES users(id),
+    
+    verification_code TEXT,
+    is_used BOOLEAN DEFAULT  FALSE,
+    expires_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+)
+
 CREATE INDEX idx_users_email ON users(email);
 CREATE INDEX idx_users_role ON users(role);
 

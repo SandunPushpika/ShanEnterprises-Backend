@@ -1,6 +1,7 @@
 using System.Net;
 using System.Text.Json;
 using Core.DTOs.Response;
+using Core.Exceptions;
 using Core.Exceptions.Auth;
 using FluentValidation;
 using Exception = System.Exception;
@@ -36,6 +37,10 @@ public class ExceptionMiddleware
         {
             await HandleUnAuthorizedExceptionAsync(context);
         }
+        catch (NotFoundException ex)
+        {
+            await HandleNotFoundExceptionAsync(context, ex.Message);
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex.Message);
@@ -58,5 +63,12 @@ public class ExceptionMiddleware
         context.Response.ContentType = "application/json";
         context.Response.StatusCode = (int) HttpStatusCode.Unauthorized;
         await context.Response.WriteAsync(JsonSerializer.Serialize(new ApiResponse("Please login again to continue", false)));
+    }
+    
+    private async Task HandleNotFoundExceptionAsync(HttpContext context, string errorMessage)
+    {
+        context.Response.ContentType = "application/json";
+        context.Response.StatusCode = (int) HttpStatusCode.NotFound;
+        await context.Response.WriteAsync(JsonSerializer.Serialize(new ApiResponse(errorMessage, false)));
     }
 }

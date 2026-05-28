@@ -3,6 +3,7 @@ using Application.Interfaces.Repositories;
 using Application.Services;
 using AutoMapper;
 using Core.Helpers;
+using Infrastructure.Interfaces;
 using Microsoft.Extensions.Options;
 using Moq;
 
@@ -14,6 +15,8 @@ public partial class AuthServiceTests
     private Mock<IUserRepository> _userRepositoryMock;
     private Mock<IMapper> _mapperMock;
     private Mock<IOptions<AppSettings>> _appSettingsMock;
+    private Mock<IEmailService> _emailServiceMock;
+    private Mock<IVerificationCodeRepository> _verificationCodeRepositoryMock;
 
     private AuthService _authService;
 
@@ -25,6 +28,8 @@ public partial class AuthServiceTests
         _userRepositoryMock = new Mock<IUserRepository>();
         _mapperMock = new Mock<IMapper>();
         _appSettingsMock = new Mock<IOptions<AppSettings>>();
+        _emailServiceMock = new Mock<IEmailService>();
+        _verificationCodeRepositoryMock = new Mock<IVerificationCodeRepository>();
 
         _appSettings = new AppSettings
         {
@@ -40,6 +45,8 @@ public partial class AuthServiceTests
 
         _authService = new AuthService(
             _userRepositoryMock.Object,
+            _verificationCodeRepositoryMock.Object,
+            _emailServiceMock.Object,
             _mapperMock.Object,
             _appSettingsMock.Object
         );

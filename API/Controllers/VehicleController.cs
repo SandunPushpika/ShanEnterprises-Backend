@@ -4,6 +4,7 @@ using Core.DTOs.Response;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ShanEnterprises.Controllers;
+
 [ApiController]
 [Route("api/[controller]")]
 public class VehicleController:Controller
