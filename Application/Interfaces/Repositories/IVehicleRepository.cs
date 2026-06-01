@@ -5,4 +5,6 @@ namespace Application.Interfaces.Repositories;
 public interface IVehicleRepository
 {
     Task AddVehicle(Vehicle vehicle);
+    Task<Vehicle?> GetVehicleById(int id);
+    Task UpdateVehicle(Vehicle vehicle);
 }
