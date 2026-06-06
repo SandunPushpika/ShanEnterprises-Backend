@@ -362,6 +362,13 @@ CREATE TABLE verification_codes (
     expires_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 )
 
+CREATE EXTENSION vector;
+
+CREATE TABLE vehicle_embeddings(
+     vehicle_id BIGINT PRIMARY KEY,
+     embedding vector(384)
+);
+
 CREATE INDEX idx_users_email ON users(email);
 CREATE INDEX idx_users_role ON users(role);
 
