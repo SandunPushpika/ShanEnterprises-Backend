@@ -9,5 +9,6 @@ public class VehicleProfile: Profile
     public VehicleProfile()
     {
         CreateMap<VehicleCreateRequest, Vehicle>();
+        CreateMap<VehicleUpdateRequest, Vehicle>();
     }
 }
