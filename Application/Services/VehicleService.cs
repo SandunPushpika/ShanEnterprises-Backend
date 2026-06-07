@@ -4,6 +4,7 @@ using AutoMapper;
 using Core.DTOs.Request;
 using Core.Entities;
 using Core.Exceptions;
+using Core.DTOs.Response;
 
 namespace Application.Services;
 
@@ -41,4 +42,16 @@ public class VehicleService:IVehicleService
 
         await _repository.UpdateVehicle(vehicle);
     }
-}
+    
+    public async Task<SearchResponse<VehicleResponse>> SearchVehicles(VehicleSearchRequest request)
+    {
+        var (vehicles, total) = await _repository.SearchVehicles(request);
+        var vehicleResponses = _mapper.Map<IReadOnlyCollection<VehicleResponse>>(vehicles);
+        return new SearchResponse<VehicleResponse>
+        {
+            Data = vehicleResponses,
+            Total = total,
+            PageNumber = request.PageNumber,
+            PageSize = request.PageSize
+        };
+    }}
