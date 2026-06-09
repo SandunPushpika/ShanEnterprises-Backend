@@ -1,11 +1,13 @@
 ﻿using Core.Enums;
 using System;
+using Core.Entities;
+
 namespace Core.DTOs.Response;
 public class VehicleResponse
 {
     public int Id { get; set; }
-    public String Brand { get; set; } = string.Empty;
-    public String Type { get; set; } = string.Empty;
+    public VehicleBrand? Brand { get; set; }
+    public VehicleType? Type { get; set; }
     public string Model { get; set; } = string.Empty;
     public string RegistrationNumber { get; set; } = string.Empty;
     public int ManufactureYear { get; set; }

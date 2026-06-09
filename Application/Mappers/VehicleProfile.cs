@@ -11,8 +11,6 @@ public class VehicleProfile: Profile
     {
         CreateMap<VehicleCreateRequest, Vehicle>();
         CreateMap<VehicleUpdateRequest, Vehicle>();
-        CreateMap<Vehicle, VehicleResponse>()
-            .ForMember(dest => dest.Brand, opt => opt.MapFrom(src => src.Brand != null ? src.Brand.Name : string.Empty))
-            .ForMember(dest => dest.Type, opt => opt.MapFrom(src => src.Type != null ? src.Type.Name : string.Empty));
+        CreateMap<Vehicle, VehicleResponse>();
     }
 }
