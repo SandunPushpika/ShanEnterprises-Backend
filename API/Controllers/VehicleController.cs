@@ -33,4 +33,11 @@ public class VehicleController:Controller
         await _vehicleService.UpdateVehicle(id, request);
         return new ApiResponse("Vehicle Updated");
     }
+    
+    [HttpPost("search")]
+    public async Task<ActionResult<ApiResponse>> SearchVehicles([FromBody] VehicleSearchRequest request)
+    {
+        var result = await _vehicleService.SearchVehicles(request);
+        return new ApiResponse(data: result);
+    }
 }
