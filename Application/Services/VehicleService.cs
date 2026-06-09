@@ -54,4 +54,6 @@ public class VehicleService:IVehicleService
             PageNumber = request.PageNumber,
             PageSize = request.PageSize
         };
-    }}
+    }
+    
+}

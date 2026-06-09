@@ -27,7 +27,10 @@ public class VehicleRepository(AppDbContext context):IVehicleRepository
     
     public async Task<(IReadOnlyCollection<Vehicle> Vehicles, int Total)> SearchVehicles(VehicleSearchRequest request)
     {
-        var query = context.Vehicles.AsQueryable();
+        var query = context.Vehicles
+            .Include(v => v.Brand)
+            .Include(v => v.Type)
+            .AsQueryable();
         if (request.MinPrice.HasValue)
             query = query.Where(v => v.DailyRentalPrice >= request.MinPrice.Value);
         if (request.MaxPrice.HasValue)
@@ -39,9 +42,12 @@ public class VehicleRepository(AppDbContext context):IVehicleRepository
         if (request.MinPassengers.HasValue)
             query = query.Where(v => v.SeatCapacity >= request.MinPassengers.Value);
         var total = await query.CountAsync();
+        var pageNumber = request.PageNumber < 1 ? 1 : request.PageNumber;
+        var pageSize = request.PageSize < 1 ? 10 : request.PageSize;
         var vehicles = await query
-            .Skip((request.PageNumber - 1) * request.PageSize)
-            .Take(request.PageSize)
+            .OrderBy(v => v.Id)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
             .ToListAsync();
         return (vehicles, total);
     }

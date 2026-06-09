@@ -8,6 +8,8 @@ public class AppDbContext : DbContext
 {
     public DbSet<User> Users { get; set; }
     public DbSet<Vehicle> Vehicles { get; set; }
+    public DbSet<VehicleBrand> VehicleBrands { get; set; }
+    public DbSet<VehicleType> VehicleTypes { get; set; }
     public DbSet<VerificationCodes> VerificationCodes { get; set; }
     
     public AppDbContext(DbContextOptions<AppDbContext> options)

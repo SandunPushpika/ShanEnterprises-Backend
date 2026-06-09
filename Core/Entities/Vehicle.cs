@@ -8,6 +8,9 @@ public class Vehicle
     
     public int? BrandId { get; set; }
     public int? TypeId { get; set; }
+
+    public virtual VehicleBrand? Brand { get; set; }
+    public virtual VehicleType? Type { get; set; }
     
     public string Model { get; set; } = string.Empty;
     public string RegistrationNumber { get; set; } = string.Empty;

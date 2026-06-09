@@ -4,8 +4,8 @@ namespace Core.DTOs.Response;
 public class VehicleResponse
 {
     public int Id { get; set; }
-    public int? BrandId { get; set; }
-    public int? TypeId { get; set; }
+    public String Brand { get; set; } = string.Empty;
+    public String Type { get; set; } = string.Empty;
     public string Model { get; set; } = string.Empty;
     public string RegistrationNumber { get; set; } = string.Empty;
     public int ManufactureYear { get; set; }
