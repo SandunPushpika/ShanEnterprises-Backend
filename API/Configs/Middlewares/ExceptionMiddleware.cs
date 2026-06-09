@@ -51,7 +51,7 @@ public class ExceptionMiddleware
     private async Task HandleExceptionAsync(HttpContext context, string? errorMessage)
     {
         var message = new ApiResponse(errorMessage, false);
-        var serializedMessage = JsonSerializer.Serialize(message);
+        var serializedMessage = JsonSerializer.Serialize(message, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
         
         context.Response.ContentType = "application/json";
         context.Response.StatusCode = (int) HttpStatusCode.BadRequest;
@@ -62,13 +62,17 @@ public class ExceptionMiddleware
     {
         context.Response.ContentType = "application/json";
         context.Response.StatusCode = (int) HttpStatusCode.Unauthorized;
-        await context.Response.WriteAsync(JsonSerializer.Serialize(new ApiResponse("Please login again to continue", false)));
+
+        var serializedMessage = JsonSerializer.Serialize(new ApiResponse("Please login again to continue", false), new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+        await context.Response.WriteAsync(serializedMessage);
     }
     
     private async Task HandleNotFoundExceptionAsync(HttpContext context, string errorMessage)
     {
         context.Response.ContentType = "application/json";
         context.Response.StatusCode = (int) HttpStatusCode.NotFound;
-        await context.Response.WriteAsync(JsonSerializer.Serialize(new ApiResponse(errorMessage, false)));
+
+        var serializedMessage = JsonSerializer.Serialize(new ApiResponse(errorMessage, false), new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+        await context.Response.WriteAsync(serializedMessage);
     }
 }

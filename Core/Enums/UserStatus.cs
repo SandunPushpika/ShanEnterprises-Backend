@@ -10,6 +10,6 @@ public enum UserStatus
     [PgName("INACTIVE")]
     INACTIVE,
     
-    [PgName("CUSTOMER")]
+    [PgName("SUSPENDED")]
     SUSPENDED,
 }

@@ -15,7 +15,6 @@ using Application.Mappers;
 using Core.Helpers;
 using Infrastructure.Interfaces;
 using Infrastructure.Services;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
@@ -28,6 +27,7 @@ public static class ServiceExtension
         services.AddRepositories();
         services.AddServices();
         services.RegisterValidators();
+        services.AddCorsConfig();
         services.AddAutoMapper(cfg => { }, typeof(UserProfile).Assembly); 
         return services;
     }
@@ -128,6 +128,19 @@ public static class ServiceExtension
                     },
                     new string[] {}
                 }
+            });
+        });
+    }
+
+    private static void AddCorsConfig(this IServiceCollection services)
+    {
+        services.AddCors(options =>
+        {
+            options.AddPolicy("devCors",builder =>
+            {
+                builder.AllowAnyOrigin();
+                builder.AllowAnyHeader();
+                builder.AllowAnyMethod();
             });
         });
     }
