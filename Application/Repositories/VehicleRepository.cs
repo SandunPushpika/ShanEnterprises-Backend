@@ -31,16 +31,18 @@ public class VehicleRepository(AppDbContext context):IVehicleRepository
             .Include(v => v.Brand)
             .Include(v => v.Type)
             .AsQueryable();
+        
         if (request.MinPrice.HasValue)
             query = query.Where(v => v.DailyRentalPrice >= request.MinPrice.Value);
-        if (request.MaxPrice.HasValue)
+        if (request.MaxPrice.HasValue && request.MaxPrice != 0)
             query = query.Where(v => v.DailyRentalPrice <= request.MaxPrice.Value);
-        if (request.TypeId.HasValue)
+        if (request.TypeId.HasValue && request.TypeId != 0)
             query = query.Where(v => v.TypeId == request.TypeId.Value);
         if (request.Status.HasValue)
             query = query.Where(v => v.Status == request.Status.Value);
-        if (request.MinPassengers.HasValue)
+        if (request.MinPassengers is > 0)
             query = query.Where(v => v.SeatCapacity >= request.MinPassengers.Value);
+        
         var total = await query.CountAsync();
         var pageNumber = request.PageNumber < 1 ? 1 : request.PageNumber;
         var pageSize = request.PageSize < 1 ? 10 : request.PageSize;
@@ -49,6 +51,7 @@ public class VehicleRepository(AppDbContext context):IVehicleRepository
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
+        
         return (vehicles, total);
     }
 }
