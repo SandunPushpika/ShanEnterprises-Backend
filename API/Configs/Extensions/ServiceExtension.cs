@@ -69,6 +69,7 @@ public static class ServiceExtension
                     o.MapEnum<VehicleStatus>("vehicle_status");
                     o.MapEnum<FuelType>("fuel_type");
                     o.MapEnum<TransmissionType>("transmission_type");
+                    o.MapEnum<BookingStatus>("booking_status");
                 });
             options.UseSnakeCaseNamingConvention();
         });

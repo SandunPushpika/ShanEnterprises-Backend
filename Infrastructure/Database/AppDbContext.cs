@@ -11,6 +11,7 @@ public class AppDbContext : DbContext
     public DbSet<VehicleBrand> VehicleBrands { get; set; }
     public DbSet<VehicleType> VehicleTypes { get; set; }
     public DbSet<VerificationCodes> VerificationCodes { get; set; }
+    public DbSet<Booking> Bookings { get; set; }
     
     public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options)
@@ -27,5 +28,22 @@ public class AppDbContext : DbContext
         modelBuilder.HasPostgresEnum<VehicleStatus>();
         modelBuilder.HasPostgresEnum<UserRole>("user_role");
         modelBuilder.HasPostgresEnum<UserStatus>("user_status");
+        modelBuilder.HasPostgresEnum<BookingStatus>("booking_status");
+        
+        modelBuilder.Entity<Booking>()
+            .Property(b => b.BookingStatus)
+            .HasColumnName("booking_status");
+        
+        modelBuilder.Entity<Booking>()
+            .HasOne(b => b.Customer)
+            .WithMany()
+            .HasForeignKey(b => b.CustomerId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Booking>()
+            .HasOne(b => b.Vehicle)
+            .WithMany()
+            .HasForeignKey(b => b.VehicleId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }
