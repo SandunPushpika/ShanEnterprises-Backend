@@ -4,6 +4,7 @@ using Core.Helpers;
 using Infrastructure.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using ShanEnterprises.Attributes;
 
 namespace ShanEnterprises.Controllers;
 
@@ -20,6 +21,7 @@ public class StorageController : ControllerBase
         _appSettings = options.Value;
     }
     
+    [CustomAuthorize(UserRole.ADMIN)]
     [HttpPost]
     public async Task<ActionResult<ApiResponse>> UploadBlob(IFormFile file, BlobType blobType, string fileName)
     {
@@ -30,6 +32,7 @@ public class StorageController : ControllerBase
         });
     }
     
+    [CustomAuthorize(UserRole.ADMIN)]
     [HttpPost("multiple")]
     public async Task<ActionResult<ApiResponse>> UploadBlobs(List<IFormFile> files, BlobType blobType)
     {

@@ -12,4 +12,5 @@ public interface IVehicleService
     Task<IReadOnlyCollection<VehicleBrand>> GetAllBrands();
     Task<IReadOnlyCollection<VehicleType>> GetAllVehicleTypes();
     Task DeleteVehicle(int id);
+    Task<List<VehicleImages>> GetVehicleImagesByVehicleIdAsync(int vehicleId);
 }

@@ -8,12 +8,14 @@ using Core.Enums;
 
 namespace Application.Repositories;
 
-public class VehicleRepository(AppDbContext context):IVehicleRepository
+public class VehicleRepository(AppDbContext context) : IVehicleRepository
 {
-    public async Task AddVehicle(Vehicle vehicle)
+    public async Task<int> AddVehicle(Vehicle vehicle)
     {
-        context.Vehicles.Add(vehicle);
+        var res = context.Vehicles.Add(vehicle);
         await context.SaveChangesAsync();
+
+        return res.Entity.Id;
     }
     public async Task<Vehicle?> GetVehicleById(int id)
     {
@@ -67,6 +69,27 @@ public class VehicleRepository(AppDbContext context):IVehicleRepository
     public async Task<IReadOnlyCollection<VehicleType>> GetAllVehicleTypes()
     {
         var result = await context.VehicleTypes.ToListAsync();
+        return result;
+    }
+
+    public async Task AddVehicleImagesAsync(IEnumerable<VehicleImages> vehicleImages)
+    {
+        await context.VehicleImages.AddRangeAsync(vehicleImages);
+        await context.SaveChangesAsync();
+    }
+
+    public async Task DeleteVehicleImagesByVehicleAsync(int vehicleId)
+    {
+        await context.VehicleImages
+            .Where(v => v.VehicleId == vehicleId)
+            .ExecuteDeleteAsync();
+        await context.SaveChangesAsync();
+    }
+
+    public async Task<List<VehicleImages>> GetVehicleImagesByVehicleIdAsync(int vehicleId)
+    {
+        var result = await context.VehicleImages.Where(v => v.VehicleId == vehicleId)
+            .ToListAsync();
         return result;
     }
 }
