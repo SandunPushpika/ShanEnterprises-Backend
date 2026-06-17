@@ -12,6 +12,7 @@ public class AppDbContext : DbContext
     public DbSet<VehicleType> VehicleTypes { get; set; }
     public DbSet<VerificationCodes> VerificationCodes { get; set; }
     public DbSet<Booking> Bookings { get; set; }
+    public DbSet<VehicleImages> VehicleImages { get; set; }
     
     public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options)

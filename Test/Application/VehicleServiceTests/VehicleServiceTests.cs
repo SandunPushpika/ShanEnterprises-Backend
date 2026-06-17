@@ -34,7 +34,7 @@ public partial class VehicleServiceTests
 
         _repositoryMock
             .Setup(x => x.AddVehicle(It.IsAny<Vehicle>()))
-            .Returns(Task.CompletedTask);
+            .Returns(Task.FromResult(0));
 
         // Act
         await _vehicleService.AddVehicle(request);
@@ -72,7 +72,7 @@ public partial class VehicleServiceTests
         _repositoryMock
             .Setup(x => x.AddVehicle(It.IsAny<Vehicle>()))
             .Callback<Vehicle>(v => capturedVehicle = v)
-            .Returns(Task.CompletedTask);
+            .Returns(Task.FromResult(0));
 
         // Act
         await _vehicleService.AddVehicle(request);

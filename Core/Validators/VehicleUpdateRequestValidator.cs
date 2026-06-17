@@ -3,9 +3,9 @@ using FluentValidation;
 
 namespace Core.Validators;
 
-public class VehicleCreateRequestValidator : AbstractValidator<VehicleCreateRequest>
+public class VehicleUpdateRequestValidator : AbstractValidator<VehicleUpdateRequest>
 {
-    public VehicleCreateRequestValidator()
+    public VehicleUpdateRequestValidator()
     {
         RuleFor(x => x.BrandId)
             .NotNull().WithMessage("Brand is required.")

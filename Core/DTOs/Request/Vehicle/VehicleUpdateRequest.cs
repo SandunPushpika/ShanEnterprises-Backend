@@ -28,4 +28,6 @@ public class VehicleUpdateRequest
     public bool AirConditioned { get; set; } = true;
     public bool HasBluetooth { get; set; } = false;
     public bool HasGps { get; set; } = false;
+    
+    public IReadOnlyList<string> ImageUrls { get; set; } = new List<string>();
 }
