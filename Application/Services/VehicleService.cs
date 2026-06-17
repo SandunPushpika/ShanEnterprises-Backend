@@ -5,6 +5,7 @@ using Core.DTOs.Request;
 using Core.Entities;
 using Core.Exceptions;
 using Core.DTOs.Response;
+using Core.Enums;
 
 namespace Application.Services;
 
@@ -64,5 +65,18 @@ public class VehicleService:IVehicleService
     public async Task<IReadOnlyCollection<VehicleType>> GetAllVehicleTypes()
     {
         return await _repository.GetAllVehicleTypes();
+    }
+
+    public async Task DeleteVehicle(int id)
+    {
+        var vehicle = await _repository.GetVehicleById(id);
+        if(vehicle == null || vehicle.Status == VehicleStatus.UNAVAILABLE)
+            throw new NotFoundException($"Vehicle with id {id} not found");
+
+        vehicle.Status = VehicleStatus.UNAVAILABLE;
+        vehicle.UpdatedAt = DateTime.UtcNow;
+        vehicle.CreatedAt = DateTime.SpecifyKind(vehicle.CreatedAt, DateTimeKind.Utc);
+        
+        await _repository.UpdateVehicle(vehicle);
     }
 }

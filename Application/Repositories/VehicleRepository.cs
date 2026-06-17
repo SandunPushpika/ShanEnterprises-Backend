@@ -4,6 +4,7 @@ using Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
 using Core.DTOs.Request;
 using System.Linq;
+using Core.Enums;
 
 namespace Application.Repositories;
 
@@ -42,6 +43,8 @@ public class VehicleRepository(AppDbContext context):IVehicleRepository
             query = query.Where(v => v.Status == request.Status.Value);
         if (request.MinPassengers is > 0)
             query = query.Where(v => v.SeatCapacity >= request.MinPassengers.Value);
+        
+        query = query.Where(v => v.Status != VehicleStatus.UNAVAILABLE);
         
         var total = await query.CountAsync();
         var pageNumber = request.PageNumber < 1 ? 1 : request.PageNumber;

@@ -55,5 +55,12 @@ public class VehicleController:Controller
         var result = await _vehicleService.GetAllVehicleTypes();
         return new ApiResponse(data: result);
     }
+
+    [HttpDelete("{id}")]
+    public async Task<ActionResult<ApiResponse>> DeleteVehicle(int id)
+    {
+        await _vehicleService.DeleteVehicle(id);
+        return new ApiResponse("Vehicle Deleted");
+    }
     
 }

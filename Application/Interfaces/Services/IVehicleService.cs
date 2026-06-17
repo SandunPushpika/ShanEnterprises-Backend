@@ -11,4 +11,5 @@ public interface IVehicleService
     Task<SearchResponse<VehicleResponse>> SearchVehicles(VehicleSearchRequest request);
     Task<IReadOnlyCollection<VehicleBrand>> GetAllBrands();
     Task<IReadOnlyCollection<VehicleType>> GetAllVehicleTypes();
+    Task DeleteVehicle(int id);
 }
