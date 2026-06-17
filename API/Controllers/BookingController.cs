@@ -9,7 +9,6 @@ namespace ShanEnterprises.Controllers;
 [AllowAnonymous]
 [ApiController]
 [Route("api/[controller]")]
-
 public class BookingController: ControllerBase
 {
     private readonly IBookingService _bookingService;
@@ -19,8 +18,7 @@ public class BookingController: ControllerBase
         _bookingService = bookingService;   
     }
 
-
-    [HttpPost("add-booking")]
+    [HttpPost]
     public async Task<ActionResult<ApiResponse>> AddBooking(
         [FromBody] BookingCreateRequest request)
     {

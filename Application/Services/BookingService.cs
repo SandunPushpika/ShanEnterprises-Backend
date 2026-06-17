@@ -1,11 +1,10 @@
 using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
 using AutoMapper;
-using Core.DTOs.Request;
 using Core.DTOs.Request.Bookings;
 using Core.DTOs.Response;
 using Core.Entities;
-using Core.Exceptions;
+using Core.Helpers;
 
 namespace Application.Services;
 
@@ -24,6 +23,10 @@ public class BookingService : IBookingService
 
     public async Task AddBooking(BookingCreateRequest request)
     {
+        var isBooked = await _repository.IsBooked(request.VehicleId, request.PickupDateTime, request.ReturnDateTime);
+        if (!isBooked)
+            throw new Exception("Vehicle is already booked on given date!");
+        
         var booking = _mapper.Map<Booking>(request);
 
         booking.RentalDays =
@@ -37,6 +40,7 @@ public class BookingService : IBookingService
 
         booking.CreatedAt = DateTime.UtcNow;
         booking.UpdatedAt = DateTime.UtcNow;
+        booking.BookingReference = RandomGenerator.GenerateBookingReference();
 
         await _repository.AddBooking(booking);
     }

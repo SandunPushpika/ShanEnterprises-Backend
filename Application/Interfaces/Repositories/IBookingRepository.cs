@@ -9,4 +9,5 @@ public interface IBookingRepository
     Task UpdateBooking(Booking booking);
     Task<IReadOnlyCollection<Booking>> GetAllBookings();
     Task DeleteBooking(Booking booking);
+    Task<bool> IsBooked(int vehicleId, DateTime from, DateTime to);
 }

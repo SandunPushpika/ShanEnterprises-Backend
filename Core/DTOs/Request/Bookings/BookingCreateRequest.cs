@@ -5,7 +5,6 @@ public class BookingCreateRequest
     public int CustomerId { get; set; }
     public int VehicleId { get; set; }
     public int? DriverId { get; set; }
-    public string BookingReference { get; set; } = string.Empty;
     public DateTime PickupDateTime { get; set; }
     public DateTime ReturnDateTime { get; set; }
     public bool WithDriver { get; set; }
