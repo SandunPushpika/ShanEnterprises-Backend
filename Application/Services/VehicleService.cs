@@ -55,5 +55,14 @@ public class VehicleService:IVehicleService
             PageSize = request.PageSize
         };
     }
-    
+
+    public async Task<IReadOnlyCollection<VehicleBrand>> GetAllBrands()
+    {
+        return await _repository.GetAllVehicleBrands();
+    }
+
+    public async Task<IReadOnlyCollection<VehicleType>> GetAllVehicleTypes()
+    {
+        return await _repository.GetAllVehicleTypes();
+    }
 }

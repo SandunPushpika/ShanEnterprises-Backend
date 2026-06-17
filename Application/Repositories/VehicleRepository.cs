@@ -54,4 +54,16 @@ public class VehicleRepository(AppDbContext context):IVehicleRepository
         
         return (vehicles, total);
     }
+
+    public async Task<IReadOnlyCollection<VehicleBrand>> GetAllVehicleBrands()
+    {
+        var result = await context.VehicleBrands.ToListAsync();
+        return result;
+    }
+
+    public async Task<IReadOnlyCollection<VehicleType>> GetAllVehicleTypes()
+    {
+        var result = await context.VehicleTypes.ToListAsync();
+        return result;
+    }
 }

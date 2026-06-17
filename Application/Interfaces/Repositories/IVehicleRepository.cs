@@ -10,5 +10,6 @@ public interface IVehicleRepository
     Task<Vehicle?> GetVehicleById(int id);
     Task UpdateVehicle(Vehicle vehicle);
     Task<(IReadOnlyCollection<Vehicle> Vehicles, int Total)> SearchVehicles(VehicleSearchRequest request);
-    
+    Task<IReadOnlyCollection<VehicleBrand>> GetAllVehicleBrands();
+    Task<IReadOnlyCollection<VehicleType>> GetAllVehicleTypes();
 }

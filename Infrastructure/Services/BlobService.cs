@@ -8,20 +8,49 @@ namespace Infrastructure.Services;
 
 public class BlobService : IStorageService
 {
-    public async Task<string> UploadBlobAsync(IFormFile file, BlobType blobType, string connectionString, string fileName)
+    private readonly IImageCompressor _imageCompressor;
+
+    public BlobService(IImageCompressor imageCompressor)
+    {
+        _imageCompressor = imageCompressor;
+    }
+    
+    public async Task<string> UploadBlobAsync(
+        IFormFile file,
+        BlobType blobType,
+        string connectionString,
+        string fileName)
     {
         var blobServiceClient = new BlobServiceClient(connectionString);
+
         try
         {
-            var containerClient = blobServiceClient.GetBlobContainerClient(blobType.ToString().ToLower());
+            var containerClient =
+                blobServiceClient.GetBlobContainerClient(blobType.ToString().ToLower());
+
             await containerClient.CreateIfNotExistsAsync();
-        
+
+            Stream uploadStream;
+
+            //Compress only images
+            if (file.ContentType.StartsWith("image/"))
+            {
+                uploadStream = await _imageCompressor.CompressAsync(file);
+            }
+            else
+            {
+                uploadStream = file.OpenReadStream();
+            }
+
             var blobClient = containerClient.GetBlobClient(fileName);
-            await blobClient.UploadAsync(file.OpenReadStream());
-        
+
+            await blobClient.UploadAsync(uploadStream, overwrite: true);
+
+            await uploadStream.DisposeAsync();
+
             return blobClient.Uri.AbsoluteUri;
         }
-        catch (Exception ex)
+        catch
         {
             throw new FailedOperationException("Could not upload to Blob");
         }
@@ -39,10 +68,15 @@ public class BlobService : IStorageService
                 file,
                 blobType,
                 connectionString,
-                file.FileName);
+                GenerateFileName(file.FileName));
 
             list.Add(res);
         }
         return list;
+    }
+
+    private String GenerateFileName(string fileName)
+    {
+        return DateTime.Now.ToString("yyyyMMddHHmmssfff") + fileName;
     }
 }

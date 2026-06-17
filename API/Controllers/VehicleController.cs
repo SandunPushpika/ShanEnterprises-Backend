@@ -18,7 +18,7 @@ public class VehicleController:Controller
         _vehicleService = vehicleService;
     }
     
-    [HttpPost("add-vehicle")]
+    [HttpPost]
     public async Task<ActionResult<ApiResponse>> AddVehicle([FromBody] VehicleCreateRequest request)
     {
         await _vehicleService.AddVehicle(request);
@@ -40,4 +40,20 @@ public class VehicleController:Controller
         var result = await _vehicleService.SearchVehicles(request);
         return new ApiResponse(data: result);
     }
+
+    [HttpGet("brands")]
+    public async Task<ActionResult<ApiResponse>> GetVehicleBrands()
+    {
+        var result = await _vehicleService.GetAllBrands();
+
+        return new ApiResponse(data: result);
+    }
+
+    [HttpGet("types")]
+    public async Task<ActionResult<ApiResponse>> GetVehicleTypes()
+    {
+        var result = await _vehicleService.GetAllVehicleTypes();
+        return new ApiResponse(data: result);
+    }
+    
 }

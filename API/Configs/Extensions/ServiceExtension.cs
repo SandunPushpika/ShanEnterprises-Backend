@@ -40,6 +40,7 @@ public static class ServiceExtension
         services.AddScoped<IContextService, ContextService>();
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<IStorageService, BlobService>();
+        services.AddScoped<IImageCompressor, ImageCompressor>();
         //Register all services here
     }
     

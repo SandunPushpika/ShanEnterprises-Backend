@@ -27,10 +27,6 @@ public class VehicleCreateRequestValidator : AbstractValidator<VehicleCreateRequ
             .InclusiveBetween(1900, DateTime.UtcNow.Year + 1)
             .WithMessage($"Manufacture year must be between 1900 and {DateTime.UtcNow.Year + 1}.");
 
-        RuleFor(x => x.Color)
-            .MaximumLength(50)
-            .When(x => !string.IsNullOrWhiteSpace(x.Color));
-
         RuleFor(x => x.Transmission)
             .NotNull().WithMessage("Transmission type is required.");
 
