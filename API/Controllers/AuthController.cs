@@ -50,4 +50,17 @@ public class AuthController(IAuthService authService) : Controller
         await authService.ResendVerificationCode(email);
         return new ApiResponse("Verification Code Sent!");
     }
+
+    [HttpGet("google")]
+    public IActionResult GetGoogleOauthUrl()
+    {
+        return Redirect(authService.GetOAuthUrl());
+    }
+
+    [HttpGet("social-login")]
+    public async Task<ActionResult<ApiResponse>> LoginUserViaSocialMedia(string code)
+    {
+        var resposne = await authService.LoginViaSocialMedia(code);
+        return new ApiResponse("Successfully logged user", data: resposne);
+    }
 }

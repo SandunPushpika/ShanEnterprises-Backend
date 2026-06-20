@@ -11,6 +11,7 @@ using Core.Exceptions.Auth;
 using Core.Helpers;
 using Core.Helpers.Templates;
 using Infrastructure.Interfaces;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
 namespace Application.Services;
@@ -22,17 +23,24 @@ public class AuthService : IAuthService
     private readonly IEmailService _emailService;
     private readonly IMapper _mapper;
     private readonly AppSettings _appSettings;
+    private readonly IOAuthService _oAuthService;
 
-    public AuthService(IUserRepository userRepository, IVerificationCodeRepository verificationCodeRepository, IEmailService emailService, IMapper mapper, IOptions<AppSettings> appSettings)
+    public AuthService(IUserRepository userRepository, 
+        IVerificationCodeRepository verificationCodeRepository, 
+        IEmailService emailService, 
+        IMapper mapper, 
+        IOptions<AppSettings> appSettings,
+        [FromKeyedServices(OAuthProvider.GOOGLE)] IOAuthService oAuthService)
     {
         _userRepository = userRepository;
         _verificationCodeRepository = verificationCodeRepository;
         _emailService = emailService;
         _mapper = mapper;
         _appSettings = appSettings.Value;
+        _oAuthService = oAuthService;
     }
     
-    public async Task RegisterUser(CreateUserRequest request)
+    public async Task<User> RegisterUser(CreateUserRequest request, bool socialMediaRequest = false)
     {
         var existingUser = await _userRepository.GetUserByEmailAsync(request.Email.ToLower());
         if (existingUser != null)
@@ -44,12 +52,15 @@ public class AuthService : IAuthService
         var user = _mapper.Map<User>(request);
         user.CreatedAt = DateTime.UtcNow;
         user.PasswordHash = PasswordHasher.HashPassword(request.Password);
-        user.EmailVerified = request.Role == UserRole.ADMIN;
+        user.EmailVerified = request.Role == UserRole.ADMIN || socialMediaRequest;
+        user.Status = UserStatus.ACTIVE;
         
         var newUser = await _userRepository.AddUserAsync(user);
         
-        if(request.Role != UserRole.ADMIN)
+        if(request.Role != UserRole.ADMIN && !socialMediaRequest)
             await SendVerificationEmail((int)newUser.Id, user.Email, user.FirstName);
+        
+        return newUser;
     }
 
     public async Task<LoginResponse> LoginUser(LoginRequest request)
@@ -108,6 +119,40 @@ public class AuthService : IAuthService
         
         await SendVerificationEmail((int)existingUser.Id, email, existingUser.FirstName);
     }
+
+    public string GetOAuthUrl() => _oAuthService.GetAuthorizeUrl();
+
+    public async Task<LoginResponse> LoginViaSocialMedia(string code)
+    {
+        var tokens = await _oAuthService.ExchangeCodeForTokenAsync(code);
+        var userInfo = await _oAuthService.GetUserInfoAsync(tokens.AccessToken);
+        if(userInfo == null)
+            throw new UnauthorizedUserException();
+        
+        var user = await _userRepository.GetUserByEmailAsync(userInfo.Email);
+        if (user == null)
+            await RegisterUser(new CreateUserRequest()
+            {
+                Email = userInfo.Email,
+                Role = UserRole.CUSTOMER,
+                FirstName = userInfo.FullName.Split()[0],
+                LastName = userInfo.FullName.Split()[1],
+                Password = new Guid().ToString()
+            });
+
+        if (user.Status == UserStatus.INACTIVE || !user.EmailVerified)
+        {
+            user.Status = UserStatus.ACTIVE;
+            user.EmailVerified = true;
+            user.UpdatedAt = DateTime.UtcNow;
+            user.CreatedAt = DateTime.SpecifyKind(user.CreatedAt, DateTimeKind.Utc);
+            await _userRepository.UpdateUserAsync(user);
+        }
+
+        return GetLoginResponse(user);
+    }
+    
+    #region private methods
     
     private LoginResponse GetLoginResponse(User user)
     {
@@ -139,4 +184,6 @@ public class AuthService : IAuthService
         
         await _verificationCodeRepository.AddVerificationCode(verificationCode);
     }
+    
+    #endregion
 }

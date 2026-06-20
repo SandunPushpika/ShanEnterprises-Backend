@@ -28,6 +28,7 @@ public static class ServiceExtension
         services.AddServices();
         services.RegisterValidators();
         services.AddCorsConfig();
+        services.AddHttpClient();
         services.AddAutoMapper(cfg => { }, typeof(UserProfile).Assembly); 
         return services;
     }
@@ -41,6 +42,7 @@ public static class ServiceExtension
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<IStorageService, BlobService>();
         services.AddScoped<IImageCompressor, ImageCompressor>();
+        services.AddKeyedScoped<IOAuthService, GoogleOAuthService>(OAuthProvider.GOOGLE);
         //Register all services here
     }
     

@@ -7,6 +7,7 @@ public class AppSettings
     public string BlobConnectionString { get; set; }
     public JwtSettings JwtSettings { get; set; }
     public MailSettings MailSettings { get; set; }
+    public GoogleSettings Google { get; set; }
 }
 
 public class JwtSettings
@@ -22,4 +23,12 @@ public class MailSettings
     public string Server { get; set; }
     public int Port { get; set; }
     public string Password { get; set; }
+}
+
+public class GoogleSettings
+{
+    public string ClientId { get; set; }
+    public string ClientSecret { get; set; }
+    public string Scopes { get; set; }
+    public string CallbackUrl { get; set; }
 }
