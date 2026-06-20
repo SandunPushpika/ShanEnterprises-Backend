@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace Core.Entities;
 
@@ -9,6 +10,7 @@ public class VehicleImages
     [Column("vehicle_id")]
     public int VehicleId { get; set; }
     
+    [JsonIgnore]
     [ForeignKey(nameof(VehicleId))]
     public virtual Vehicle Vehicle { get; set; } = null!;
     public string ImageUrl { get; set; }

@@ -13,4 +13,5 @@ public interface IVehicleService
     Task<IReadOnlyCollection<VehicleType>> GetAllVehicleTypes();
     Task DeleteVehicle(int id);
     Task<List<VehicleImages>> GetVehicleImagesByVehicleIdAsync(int vehicleId);
+    Task<VehicleResponse> GetVehicleById(int vehicleId);
 }

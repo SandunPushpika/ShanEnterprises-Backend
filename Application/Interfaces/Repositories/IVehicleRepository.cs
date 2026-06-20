@@ -7,7 +7,7 @@ namespace Application.Interfaces.Repositories;
 public interface IVehicleRepository
 {
     Task<int>  AddVehicle(Vehicle vehicle);
-    Task<Vehicle?> GetVehicleById(int id);
+    Task<Vehicle?> GetVehicleById(int id, bool includeTypes = false, bool includeImages = false, bool includeBrands = false);
     Task UpdateVehicle(Vehicle vehicle);
     Task<(IReadOnlyCollection<Vehicle> Vehicles, int Total)> SearchVehicles(VehicleSearchRequest request);
     Task<IReadOnlyCollection<VehicleBrand>> GetAllVehicleBrands();

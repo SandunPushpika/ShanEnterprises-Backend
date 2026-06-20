@@ -17,9 +17,26 @@ public class VehicleRepository(AppDbContext context) : IVehicleRepository
 
         return res.Entity.Id;
     }
-    public async Task<Vehicle?> GetVehicleById(int id)
+    public async Task<Vehicle?> GetVehicleById(int id, bool includeTypes = false, bool includeImages = false, bool includeBrands = false)
     {
-        return await context.Vehicles.FindAsync(id);
+        IQueryable<Vehicle> query = context.Vehicles;
+
+        if (includeTypes)
+        {
+            query = query.Include(v => v.Type);
+        }
+
+        if (includeBrands)
+        {
+            query = query.Include(v => v.Brand);
+        }
+
+        if (includeImages)
+        {
+            query = query.Include(v => v.VehicleImages);
+        }
+
+        return await query.FirstOrDefaultAsync(v => v.Id == id);
     }
 
     public async Task UpdateVehicle(Vehicle vehicle)

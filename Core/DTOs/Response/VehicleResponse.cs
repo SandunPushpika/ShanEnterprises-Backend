@@ -28,4 +28,5 @@ public class VehicleResponse
     public int TotalBookings { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
+    public List<VehicleImages>? VehicleImages { get; set; }
 }

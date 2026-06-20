@@ -95,6 +95,12 @@ public class VehicleService : IVehicleService
         return await _repository.GetVehicleImagesByVehicleIdAsync(vehicleId);
     }
 
+    public async Task<VehicleResponse> GetVehicleById(int vehicleId)
+    {
+        var vehicle = await _repository.GetVehicleById(vehicleId, true, true, true);
+        return _mapper.Map<VehicleResponse>(vehicle);
+    }
+    
     #region private methods
 
     private async Task AddVehicleImages(IReadOnlyList<string> imageUrls, int vehicleId)

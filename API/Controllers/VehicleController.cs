@@ -77,5 +77,13 @@ public class VehicleController:Controller
         var result = await _vehicleService.GetVehicleImagesByVehicleIdAsync(id);
         return new ApiResponse(data: result);
     }
+
+    [AllowAnonymous]
+    [HttpGet("{id}")]
+    public async Task<ActionResult<ApiResponse>> GetVehicleById(int id)
+    {
+        var result = await _vehicleService.GetVehicleById(id);
+        return new ApiResponse(data: result);
+    }
     
 }
