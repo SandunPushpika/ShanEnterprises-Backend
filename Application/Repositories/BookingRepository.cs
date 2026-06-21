@@ -3,7 +3,7 @@ using Core.Entities;
 using Core.Enums;
 using Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
-
+using Core.DTOs.Request.Bookings;
 namespace Application.Repositories;
 
 public class BookingRepository(AppDbContext context) : IBookingRepository
@@ -36,9 +36,21 @@ public class BookingRepository(AppDbContext context) : IBookingRepository
         throw new NotImplementedException();
     }
 
-    public Task<IReadOnlyCollection<Booking>> GetAllBookings()
+    public async Task<(IReadOnlyCollection<Booking> Bookings, int Total)> GetAllBookings(BookingSearchRequest request)
     {
-        throw new NotImplementedException();
+        var query = context.Bookings
+            .Include(b => b.Customer)
+            .Include(b => b.Vehicle)
+            .AsQueryable();
+        var total = await query.CountAsync();
+        var pageNumber = request.PageNumber < 1 ? 1 : request.PageNumber;
+        var pageSize   = request.PageSize   < 1 ? 10 : request.PageSize;
+        var bookings = await query
+            .OrderByDescending(b => b.CreatedAt)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+        return (bookings, total);
     }
 
     public Task DeleteBooking(Booking booking)

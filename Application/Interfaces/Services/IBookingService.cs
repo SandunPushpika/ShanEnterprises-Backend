@@ -9,7 +9,7 @@ public interface IBookingService
     Task AddBooking(BookingCreateRequest request);  
     Task UpdateBooking(int id, BookingUpdateRequest request);
     Task<BookingReadResponse> GetBookingById(int id);
-    Task<IReadOnlyCollection<BookingReadResponse>> GetAllBookings();
+    Task<SearchResponse<BookingReadResponse>> GetAllBookings(BookingSearchRequest request);
     Task UpdateBookingStatus(int id, BookingStatusUpdatRequest request);
     Task DeleteBooking(int id);
 }
