@@ -24,7 +24,7 @@ public class BookingService : IBookingService
     public async Task AddBooking(BookingCreateRequest request)
     {
         var isBooked = await _repository.IsBooked(request.VehicleId, request.PickupDateTime, request.ReturnDateTime);
-        if (!isBooked)
+        if (isBooked)
             throw new Exception("Vehicle is already booked on given date!");
         
         var booking = _mapper.Map<Booking>(request);
