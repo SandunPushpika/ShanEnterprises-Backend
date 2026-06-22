@@ -7,6 +7,8 @@ public class BookingCreateRequest
     public int? DriverId { get; set; }
     public DateTime PickupDateTime { get; set; }
     public DateTime ReturnDateTime { get; set; }
+    public string PickupLocation { get; set; } = string.Empty;
+    public string? DropoffLocation { get; set; }
     public bool WithDriver { get; set; }
     public decimal BaseRentalCost { get; set; }
     public decimal DriverFee { get; set; }

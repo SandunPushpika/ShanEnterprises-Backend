@@ -13,10 +13,12 @@ namespace ShanEnterprises.Controllers;
 public class VehicleController:Controller
 {
     private readonly IVehicleService _vehicleService;
+    private readonly IBookingService _bookingService;
 
-    public VehicleController(IVehicleService vehicleService)
+    public VehicleController(IVehicleService vehicleService, IBookingService bookingService)
     {
         _vehicleService = vehicleService;
+        _bookingService = bookingService;
     }
     
     [CustomAuthorize(UserRole.ADMIN)]
@@ -83,6 +85,14 @@ public class VehicleController:Controller
     public async Task<ActionResult<ApiResponse>> GetVehicleById(int id)
     {
         var result = await _vehicleService.GetVehicleById(id);
+        return new ApiResponse(data: result);
+    }
+
+    [AllowAnonymous]
+    [HttpGet("{id}/booked-dates")]
+    public async Task<ActionResult<ApiResponse>> GetBookedDates(int id)
+    {
+        var result = await _bookingService.GetBookedDatesByVehicleId(id);
         return new ApiResponse(data: result);
     }
     
