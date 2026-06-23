@@ -4,6 +4,7 @@ using AutoMapper;
 using Core.DTOs.Request.Bookings;
 using Core.DTOs.Response;
 using Core.Entities;
+using Core.Exceptions;
 using Core.Helpers;
 
 namespace Application.Services;
@@ -11,13 +12,16 @@ namespace Application.Services;
 public class BookingService : IBookingService
 {
     private readonly IBookingRepository _repository;
+    private readonly IVehicleRepository _vehicleRepository;
     private readonly IMapper _mapper;
 
     public BookingService(
         IBookingRepository repository,
+        IVehicleRepository vehicleRepository,
         IMapper mapper)
     {
         _repository = repository;
+        _vehicleRepository = vehicleRepository;
         _mapper = mapper;
     }
 
@@ -78,5 +82,14 @@ public class BookingService : IBookingService
     public Task DeleteBooking(int id)
     {
         throw new NotImplementedException();
+    }
+
+    public async Task<IReadOnlyCollection<BookedDateRangeResponse>> GetBookedDatesByVehicleId(int vehicleId)
+    {
+        var vehicle = await _vehicleRepository.GetVehicleById(vehicleId);
+        if (vehicle == null)
+            throw new NotFoundException($"Vehicle with id {vehicleId} not found");
+
+        return await _repository.GetBookedDatesByVehicleId(vehicleId);
     }
 }

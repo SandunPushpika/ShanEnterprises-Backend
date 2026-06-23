@@ -360,7 +360,7 @@ CREATE TABLE verification_codes (
     verification_code TEXT,
     is_used BOOLEAN DEFAULT  FALSE,
     expires_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-)
+);
 
 CREATE EXTENSION vector;
 
