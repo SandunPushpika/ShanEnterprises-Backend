@@ -69,8 +69,7 @@ public class BookingService : IBookingService
             PageSize   = request.PageSize
         };
     }
-
-
+    
     public Task UpdateBookingStatus(int id, BookingStatusUpdatRequest request)
     {
         throw new NotImplementedException();

@@ -1,6 +1,5 @@
 using Core.DTOs.Request.Bookings;
 using Core.Entities;
-using Core.DTOs.Request.Bookings;
 namespace Application.Interfaces.Repositories;
 
 public interface IBookingRepository
