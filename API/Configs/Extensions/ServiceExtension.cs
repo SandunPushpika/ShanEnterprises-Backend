@@ -13,6 +13,7 @@ using Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
 using Application.Mappers;
 using Core.Helpers;
+using Core.Interfaces;
 using Infrastructure.Interfaces;
 using Infrastructure.Services;
 using Microsoft.IdentityModel.Tokens;
@@ -42,6 +43,7 @@ public static class ServiceExtension
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<IStorageService, BlobService>();
         services.AddScoped<IImageCompressor, ImageCompressor>();
+        services.AddScoped<IApplicationContext, ApplicationContext>();
         services.AddKeyedScoped<IOAuthService, GoogleOAuthService>(OAuthProvider.GOOGLE);
         //Register all services here
     }

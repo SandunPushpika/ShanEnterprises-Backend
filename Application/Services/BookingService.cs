@@ -6,6 +6,7 @@ using Core.DTOs.Response;
 using Core.Entities;
 using Core.Exceptions;
 using Core.Helpers;
+using Core.Interfaces;
 
 namespace Application.Services;
 
@@ -14,25 +15,33 @@ public class BookingService : IBookingService
     private readonly IBookingRepository _repository;
     private readonly IVehicleRepository _vehicleRepository;
     private readonly IMapper _mapper;
+    private readonly IApplicationContext _context;
 
     public BookingService(
         IBookingRepository repository,
         IVehicleRepository vehicleRepository,
-        IMapper mapper)
+        IMapper mapper,
+        IApplicationContext context)
     {
         _repository = repository;
         _vehicleRepository = vehicleRepository;
         _mapper = mapper;
+        _context = context;
     }
 
     public async Task AddBooking(BookingCreateRequest request)
     {
+        var user = _context.GetUser();
+        if (user == null)
+            throw new UnauthorizedAccessException("User is not logged in to place the booking");
+        
         var isBooked = await _repository.IsBooked(request.VehicleId, request.PickupDateTime, request.ReturnDateTime);
         if (isBooked)
             throw new Exception("Vehicle is already booked on given date!");
         
         var booking = _mapper.Map<Booking>(request);
 
+        booking.CustomerId = user.Id;
         booking.RentalDays =
             (booking.ReturnDatetime.Date - booking.PickupDatetime.Date).Days;
 

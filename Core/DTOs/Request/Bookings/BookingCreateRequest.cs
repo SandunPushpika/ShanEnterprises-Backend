@@ -2,7 +2,6 @@ namespace Core.DTOs.Request.Bookings;
 
 public class BookingCreateRequest
 {
-    public int CustomerId { get; set; }
     public int VehicleId { get; set; }
     public int? DriverId { get; set; }
     public DateTime PickupDateTime { get; set; }
