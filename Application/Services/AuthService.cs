@@ -131,14 +131,14 @@ public class AuthService : IAuthService
         
         var user = await _userRepository.GetUserByEmailAsync(userInfo.Email);
         if (user == null)
-            await RegisterUser(new CreateUserRequest()
+            user = await RegisterUser(new CreateUserRequest()
             {
                 Email = userInfo.Email,
                 Role = UserRole.CUSTOMER,
                 FirstName = userInfo.FullName.Split()[0],
                 LastName = userInfo.FullName.Split()[1],
-                Password = new Guid().ToString()
-            });
+                Password = Guid.NewGuid().ToString()
+            }, socialMediaRequest: true);
 
         if (user.Status == UserStatus.INACTIVE || !user.EmailVerified)
         {

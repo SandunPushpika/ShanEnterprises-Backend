@@ -18,7 +18,7 @@ public class ContextService : IContextService
     
     public Task<User> GetUser()
     {
-        var claims = _httpContextAccessor.HttpContext.User;
+        var claims = _httpContextAccessor.HttpContext?.User;
         
         var userId = claims?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         var userEmail = claims?.FindFirst(ClaimTypes.Email)?.Value;

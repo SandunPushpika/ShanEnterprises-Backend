@@ -6,7 +6,6 @@ using Core.DTOs.Response;
 using Core.Entities;
 using Core.Exceptions;
 using Core.Helpers;
-using Core.Interfaces;
 
 namespace Application.Services;
 
@@ -15,13 +14,13 @@ public class BookingService : IBookingService
     private readonly IBookingRepository _repository;
     private readonly IVehicleRepository _vehicleRepository;
     private readonly IMapper _mapper;
-    private readonly IApplicationContext _context;
+    private readonly IContextService _context;
 
     public BookingService(
         IBookingRepository repository,
         IVehicleRepository vehicleRepository,
         IMapper mapper,
-        IApplicationContext context)
+        IContextService context)
     {
         _repository = repository;
         _vehicleRepository = vehicleRepository;
@@ -31,7 +30,7 @@ public class BookingService : IBookingService
 
     public async Task AddBooking(BookingCreateRequest request)
     {
-        var user = _context.GetUser();
+        var user = await _context.GetUser();
         if (user == null)
             throw new UnauthorizedAccessException("User is not logged in to place the booking");
         

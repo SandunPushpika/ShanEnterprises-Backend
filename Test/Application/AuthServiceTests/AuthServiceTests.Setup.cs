@@ -17,6 +17,7 @@ public partial class AuthServiceTests
     private Mock<IOptions<AppSettings>> _appSettingsMock;
     private Mock<IEmailService> _emailServiceMock;
     private Mock<IVerificationCodeRepository> _verificationCodeRepositoryMock;
+    private Mock<IOAuthService> _oauthServiceMock;
 
     private AuthService _authService;
 
@@ -30,6 +31,7 @@ public partial class AuthServiceTests
         _appSettingsMock = new Mock<IOptions<AppSettings>>();
         _emailServiceMock = new Mock<IEmailService>();
         _verificationCodeRepositoryMock = new Mock<IVerificationCodeRepository>();
+        _oauthServiceMock = new Mock<IOAuthService>();
 
         _appSettings = new AppSettings
         {
@@ -48,7 +50,8 @@ public partial class AuthServiceTests
             _verificationCodeRepositoryMock.Object,
             _emailServiceMock.Object,
             _mapperMock.Object,
-            _appSettingsMock.Object
+            _appSettingsMock.Object,
+            _oauthServiceMock.Object
         );
     }
 }
