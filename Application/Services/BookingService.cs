@@ -68,21 +68,11 @@ public class BookingService : IBookingService
         throw new NotImplementedException();
     }
 
-    public async Task<SearchResponse<BookingReadResponse>> GetAllBookings(BookingSearchRequest request)
+    public Task<IReadOnlyCollection<BookingReadResponse>> GetAllBookings()
     {
-        var (bookings, total) = await _repository.GetAllBookings(request);
-
-        var bookingResponses = _mapper.Map<IReadOnlyCollection<BookingReadResponse>>(bookings);
-
-        return new SearchResponse<BookingReadResponse>
-        {
-            Data       = bookingResponses,
-            Total      = total,
-            PageNumber = request.PageNumber,
-            PageSize   = request.PageSize
-        };
+        throw new NotImplementedException();
     }
-    
+
     public Task UpdateBookingStatus(int id, BookingStatusUpdatRequest request)
     {
         throw new NotImplementedException();
