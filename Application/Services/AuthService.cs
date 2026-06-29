@@ -1,3 +1,4 @@
+using System.Security.Authentication;
 using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
 using AutoMapper;
@@ -68,6 +69,9 @@ public class AuthService : IAuthService
         var existingUser = await _userRepository.GetUserByEmailAsync(request.Email.ToLower());
         if (existingUser == null)
             throw new InvalidCredentialsException();
+
+        if (existingUser.Status != UserStatus.ACTIVE)
+            throw new InvalidCredentialException("User is not active!");
         
         if(!PasswordHasher.VerifyPassword(request.Password, existingUser.PasswordHash))
             throw new InvalidCredentialsException();
