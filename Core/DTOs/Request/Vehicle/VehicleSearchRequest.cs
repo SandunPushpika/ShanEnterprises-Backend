@@ -13,5 +13,6 @@ public class VehicleSearchRequest
     public int PageSize { get; set; } = 10;
     public DateTime? FromDate { get; set; }
     public DateTime? ToDate { get; set; }
+    public string? Search { get; set; }
 }
 

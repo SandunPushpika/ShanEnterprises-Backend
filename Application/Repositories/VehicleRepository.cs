@@ -62,6 +62,12 @@ public class VehicleRepository(AppDbContext context) : IVehicleRepository
             query = query.Where(v => v.Status == request.Status.Value);
         if (request.MinPassengers is > 0)
             query = query.Where(v => v.SeatCapacity >= request.MinPassengers.Value);
+        if (!string.IsNullOrWhiteSpace(request.Search))
+        {
+            query = query.Where(v =>
+                (v.Brand != null && EF.Functions.ILike(v.Brand.Name, $"%{request.Search}%")) ||
+                EF.Functions.ILike(v.Model, $"%{request.Search}%"));
+        }
         
         query = query.Where(v => v.Status != VehicleStatus.UNAVAILABLE);
         
