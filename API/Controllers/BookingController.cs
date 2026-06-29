@@ -19,7 +19,7 @@ public class BookingController : ControllerBase
         _bookingService = bookingService;
     }
 
-    [AllowAnonymous]
+    [CustomAuthorize(UserRole.ADMIN)]
     [HttpPost]
     public async Task<ActionResult<ApiResponse>> AddBooking(
         [FromBody] BookingCreateRequest request)
@@ -34,6 +34,13 @@ public class BookingController : ControllerBase
     public async Task<ActionResult<ApiResponse>> GetAllBookings([FromBody] BookingSearchRequest request)
     {
         var result = await _bookingService.GetAllBookings(request);
+        return new ApiResponse(data: result);
+    }
+
+    [HttpPost("user-booking")]
+    public async Task<ActionResult<ApiResponse>> GetBookingsForUser([FromBody] BookingSearchRequest request)
+    {
+        var result = await _bookingService.GetAllBookingsForUser(request);
         return new ApiResponse(data: result);
     }
 }

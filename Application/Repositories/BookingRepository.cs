@@ -54,7 +54,7 @@ public class BookingRepository(AppDbContext context) : IBookingRepository
             query = query.Where(b => b.CustomerId == request.CustomerId.Value);
         }
 
-        if (request.DriverId.HasValue)
+        if (request.DriverId.HasValue && request.DriverId != 0)
         {
             query = query.Where(b => b.DriverId == request.DriverId.Value);
         }

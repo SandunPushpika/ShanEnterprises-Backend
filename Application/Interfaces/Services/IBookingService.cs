@@ -13,4 +13,5 @@ public interface IBookingService
     Task UpdateBookingStatus(int id, BookingStatusUpdatRequest request);
     Task DeleteBooking(int id);
     Task<IReadOnlyCollection<BookedDateRangeResponse>> GetBookedDatesByVehicleId(int vehicleId);
+    Task<SearchResponse<BookingReadResponse>> GetAllBookingsForUser(BookingSearchRequest request);
 }

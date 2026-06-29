@@ -100,4 +100,14 @@ public class BookingService : IBookingService
 
         return await _repository.GetBookedDatesByVehicleId(vehicleId);
     }
+
+    public async Task<SearchResponse<BookingReadResponse>> GetAllBookingsForUser(BookingSearchRequest request)
+    {
+        var user = await _context.GetUser();
+        if (user == null)
+            throw new UnauthorizedAccessException();
+        
+        request.CustomerId = user.Id;
+        return await GetAllBookings(request);
+    }
 }
