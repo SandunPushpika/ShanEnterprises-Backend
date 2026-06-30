@@ -19,7 +19,6 @@ public class BookingController : ControllerBase
         _bookingService = bookingService;
     }
 
-    [CustomAuthorize(UserRole.ADMIN)]
     [HttpPost]
     public async Task<ActionResult<ApiResponse>> AddBooking(
         [FromBody] BookingCreateRequest request)
