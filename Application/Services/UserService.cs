@@ -29,7 +29,7 @@ public class UserService : IUserService
                 
         var user = await _userRepository.GetUserByIdAsync(id);
 
-        return user == null ? null : MapToResponse(user);
+        return user == null ? null : _mapper.Map<UserResponse>(user);
     }
     
     public async Task<UserResponse> UpdateUserAsync(UserUpdateRequest request)
@@ -47,11 +47,7 @@ public class UserService : IUserService
 
         var updatedUser = await _userRepository.UpdateUserAsync(user);
 
-        return MapToResponse(updatedUser);
-    }
-    
-    private UserResponse MapToResponse(User user)
-    {
         return _mapper.Map<UserResponse>(user);
     }
+
 }

@@ -8,6 +8,7 @@ using ShanEnterprises.Attributes;
 
 namespace ShanEnterprises.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class BookingController : ControllerBase
