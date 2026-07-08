@@ -13,6 +13,7 @@ public class AppDbContext : DbContext
     public DbSet<VerificationCodes> VerificationCodes { get; set; }
     public DbSet<Booking> Bookings { get; set; }
     public DbSet<VehicleImages> VehicleImages { get; set; }
+    public DbSet<Payments> Payments { get; set; }
     
     public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options)
@@ -25,11 +26,12 @@ public class AppDbContext : DbContext
         modelBuilder.HasPostgresEnum<FuelType>();
 
         modelBuilder.HasPostgresEnum<TransmissionType>();
-
         modelBuilder.HasPostgresEnum<VehicleStatus>();
         modelBuilder.HasPostgresEnum<UserRole>("user_role");
         modelBuilder.HasPostgresEnum<UserStatus>("user_status");
         modelBuilder.HasPostgresEnum<BookingStatus>("booking_status");
+        modelBuilder.HasPostgresEnum<PaymentStatus>("payment_status");
+        modelBuilder.HasPostgresEnum<PaymentMethod>("payment_method");
         
         modelBuilder.Entity<Booking>()
             .Property(b => b.BookingStatus)
