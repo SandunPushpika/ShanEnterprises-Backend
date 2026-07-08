@@ -42,6 +42,7 @@ public static class ServiceExtension
         services.AddScoped<IStorageService, BlobService>();
         services.AddScoped<IImageCompressor, ImageCompressor>();
         services.AddKeyedScoped<IOAuthService, GoogleOAuthService>(OAuthProvider.GOOGLE);
+        services.AddScoped<IPaymentService, StripeService>();
         //Register all services here
     }
     
