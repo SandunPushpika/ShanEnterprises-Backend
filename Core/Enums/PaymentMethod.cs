@@ -10,7 +10,7 @@ public enum PaymentMethod
     [PgName("BANK_TRANSFER")]
     BANK_TRANSFER,
     
-    [PgName("ONLINE")]
+    [PgName("ONLINE_PAYMENT")]
     ONLINE,
     
     [PgName("CASH")]

@@ -38,4 +38,5 @@ public class StripeConfig
 {
     public string SecretKey { get; set; }
     public string PublicKey { get; set; }
+    public string RedirectUri { get; set; }
 }

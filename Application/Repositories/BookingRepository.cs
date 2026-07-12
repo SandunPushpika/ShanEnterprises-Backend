@@ -9,9 +9,14 @@ namespace Application.Repositories;
 
 public class BookingRepository(AppDbContext context) : IBookingRepository
 {
-    public async Task AddBooking(Booking booking)
+    public async Task<Booking> AddBooking(Booking booking)
     {
-        context.Bookings.Add(booking);
+       var res = await context.Bookings.AddAsync(booking);
+       return res.Entity;
+    }
+
+    public async Task SaveAsync()
+    {
         await context.SaveChangesAsync();
     }
 
@@ -27,14 +32,15 @@ public class BookingRepository(AppDbContext context) : IBookingRepository
         return isBooked;
     }
 
-    public Task<Booking?> GetBookingById(int id)
+    public async Task<Booking?> GetBookingById(int id)
     {
-        throw new NotImplementedException();
+        return await context.Bookings.FirstOrDefaultAsync(b => b.Id == id);
     }
 
-    public Task UpdateBooking(Booking booking)
+    public async Task UpdateBooking(Booking booking)
     {
-        throw new NotImplementedException();
+        context.Bookings.Update(booking);
+        await context.SaveChangesAsync();
     }
 
     public async Task<(IReadOnlyCollection<Booking> Bookings, int Total)> GetAllBookings(BookingSearchRequest request)
@@ -105,9 +111,10 @@ public class BookingRepository(AppDbContext context) : IBookingRepository
         return (bookings, total);
     }
 
-    public Task DeleteBooking(Booking booking)
+    public async Task DeleteBooking(Booking booking)
     {
-        throw new NotImplementedException();
+        context.Bookings.Remove(booking);
+        await context.SaveChangesAsync();
     }
 
     public async Task<IReadOnlyCollection<BookedDateRangeResponse>> GetBookedDatesByVehicleId(int vehicleId)

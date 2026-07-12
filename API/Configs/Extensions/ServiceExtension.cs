@@ -51,6 +51,7 @@ public static class ServiceExtension
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IVehicleRepository, VehicleRepository>();
         services.AddScoped<IVerificationCodeRepository, VerificationCodeRepository>();
+        services.AddScoped<IPaymentRepository, PaymentRepository>();
         //Register all repositories here
     }
 
@@ -73,6 +74,8 @@ public static class ServiceExtension
                     o.MapEnum<FuelType>("fuel_type");
                     o.MapEnum<TransmissionType>("transmission_type");
                     o.MapEnum<BookingStatus>("booking_status");
+                    o.MapEnum<PaymentStatus>("payment_status");
+                    o.MapEnum<PaymentMethod>("payment_method");
                 });
             options.UseSnakeCaseNamingConvention();
         });
