@@ -38,6 +38,8 @@ builder.Services.AddAuthenticationConfig(appSettings.JwtSettings);
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IBookingRepository, BookingRepository>();
 builder.Services.AddScoped<IBookingService, BookingService>();
+builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
+builder.Services.AddScoped<IReviewService, ReviewService>();
 
 var app = builder.Build();
 

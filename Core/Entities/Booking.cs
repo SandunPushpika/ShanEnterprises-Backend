@@ -57,8 +57,8 @@ public class Booking
     public DateTime? ConfirmedAt { get; set; }
     public DateTime? CompletedAt { get; set; }
 
-    public DateTime CreatedAt { get; set; } = DateTime.Now;
-    public DateTime UpdatedAt { get; set; } = DateTime.Now;
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
     public virtual User Customer { get; set; } = null!;
     public virtual Vehicle Vehicle { get; set; } = null!;

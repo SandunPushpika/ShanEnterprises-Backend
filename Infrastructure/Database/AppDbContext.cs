@@ -14,6 +14,7 @@ public class AppDbContext : DbContext
     public DbSet<Booking> Bookings { get; set; }
     public DbSet<VehicleImages> VehicleImages { get; set; }
     public DbSet<Payments> Payments { get; set; }
+    public DbSet<Review> Reviews { get; set; }
     
     public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options)
@@ -48,5 +49,39 @@ public class AppDbContext : DbContext
             .WithMany()
             .HasForeignKey(b => b.VehicleId)
             .OnDelete(DeleteBehavior.Restrict);
+        
+        modelBuilder.Entity<Review>()
+            .HasOne(r => r.Booking)
+            .WithMany()
+            .HasForeignKey(r => r.BookingId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Review>()
+            .HasOne(r => r.Customer)
+            .WithMany()
+            .HasForeignKey(r => r.CustomerId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+
+
+        modelBuilder.Entity<Review>()
+            .HasOne(r => r.Vehicle)
+            .WithMany()
+            .HasForeignKey(r => r.VehicleId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Review>()
+            .Property(r => r.VehicleRating)
+            .HasColumnName("vehicle_rating");
+
+
+        modelBuilder.Entity<Review>()
+            .Property(r => r.DriverRating)
+            .HasColumnName("driver_rating");
+
+
+        modelBuilder.Entity<Review>()
+            .Property(r => r.CreatedAt)
+            .HasColumnName("created_at");
     }
 }
