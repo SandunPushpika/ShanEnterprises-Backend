@@ -1,5 +1,6 @@
 using Application.Interfaces.Services;
 using Core.DTOs.Request;
+using Core.DTOs.Request.Review;
 using Core.DTOs.Response;
 using Core.Enums;
 using Microsoft.AspNetCore.Authorization;
@@ -14,13 +15,17 @@ public class VehicleController:Controller
 {
     private readonly IVehicleService _vehicleService;
     private readonly IBookingService _bookingService;
+    private readonly IReviewService _reviewService;
 
-    public VehicleController(IVehicleService vehicleService, IBookingService bookingService)
+    public VehicleController(IVehicleService vehicleService, IBookingService bookingService,IReviewService reviewService)
     {
         _vehicleService = vehicleService;
         _bookingService = bookingService;
+        _reviewService = reviewService;
+        
     }
     
+        
     [CustomAuthorize(UserRole.ADMIN)]
     [HttpPost]
     public async Task<ActionResult<ApiResponse>> AddVehicle([FromBody] VehicleCreateRequest request)
@@ -94,6 +99,20 @@ public class VehicleController:Controller
     {
         var result = await _bookingService.GetBookedDatesByVehicleId(id);
         return new ApiResponse(data: result);
+    }
+    
+    [CustomAuthorize(UserRole.CUSTOMER)]
+    [HttpPost("{vehicleId}/review")]
+    public async Task<ActionResult<ApiResponse>> AddReview(
+        int vehicleId,
+        [FromBody] AddReviewRequest request)
+    {
+        await _reviewService.AddReview(
+            vehicleId,
+            request);
+
+        return new ApiResponse(
+            "Review added successfully");
     }
     
 }
