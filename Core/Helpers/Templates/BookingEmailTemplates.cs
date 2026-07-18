@@ -335,4 +335,164 @@ public static class BookingEmailTemplates
 </body>
 </html>";
     }
+
+    public static string GenerateTripCompleted(
+        string customerName,
+        string bookingReferenceId,
+        string vehicleModel,
+        string reviewLink)
+    {
+        return $@"
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <title>Thank You for Choosing Us</title>
+</head>
+
+<body style='margin:0; padding:0; background-color:#f4f8ff; font-family:Arial, Helvetica, sans-serif;'>
+
+<table role='presentation' width='100%' cellspacing='0' cellpadding='0'
+       style='background-color:#f4f8ff; padding:40px 0;'>
+<tr>
+<td align='center'>
+
+<table role='presentation' width='600' cellspacing='0' cellpadding='0'
+       style='background:#ffffff; border-radius:12px; overflow:hidden;
+              box-shadow:0 4px 20px rgba(0,0,0,0.08);'>
+
+    <!-- Header -->
+    <tr>
+        <td style='background:linear-gradient(135deg,#7c3aed,#8b5cf6);
+                   padding:25px; text-align:center;'>
+            <h1 style='margin:0; color:#ffffff; font-size:22px;'>
+                Thank You for Traveling With Us!
+            </h1>
+        </td>
+    </tr>
+
+    <!-- Body -->
+    <tr>
+        <td style='padding:30px; color:#333333;'>
+
+            <p style='font-size:16px; margin:0 0 15px 0;'>
+                Hello <strong>{customerName}</strong>,
+            </p>
+
+            <p style='font-size:15px; line-height:1.6; margin:0 0 20px 0;'>
+                We hope you had an enjoyable journey with your rented vehicle.
+                Thank you for choosing us—we truly appreciate your trust and hope
+                we were able to make your trip comfortable and hassle-free.
+            </p>
+
+            <!-- Booking Reference -->
+            <div style='text-align:center; margin:30px 0;'>
+                <div style='display:inline-block;
+                            padding:15px 25px;
+                            font-size:20px;
+                            font-weight:bold;
+                            color:#7c3aed;
+                            background:#f5f3ff;
+                            border:2px dashed #7c3aed;
+                            border-radius:8px;'>
+                    Booking Ref: {bookingReferenceId}
+                </div>
+            </div>
+
+            <!-- Trip Details -->
+            <table width='100%' cellpadding='10' cellspacing='0'
+                   style='border-collapse:collapse;
+                          background:#fafafa;
+                          border-radius:8px;'>
+
+                <tr>
+                    <td style='font-weight:bold;'>Vehicle</td>
+                    <td>{vehicleModel}</td>
+                </tr>
+
+                <tr>
+                    <td style='font-weight:bold;'>Trip Status</td>
+                    <td style='color:#16a34a; font-weight:bold;'>
+                        Completed
+                    </td>
+                </tr>
+
+            </table>
+
+            <p style='font-size:15px; line-height:1.7; margin:30px 0 20px 0;'>
+                Your feedback means a lot to us. We'd love to hear about your
+                experience with both the vehicle and our service. Your review
+                helps us improve and assists future customers in making informed
+                decisions.
+            </p>
+
+            <!-- Review Button -->
+            <div style='text-align:center; margin:35px 0;'>
+                <a href='{reviewLink}'
+                   style='background:#7c3aed;
+                          color:#ffffff;
+                          text-decoration:none;
+                          padding:14px 34px;
+                          border-radius:8px;
+                          font-size:16px;
+                          font-weight:bold;
+                          display:inline-block;'>
+                    Leave a Review
+                </a>
+            </div>
+
+            <p style='font-size:14px; color:#666666; line-height:1.6;'>
+                If the button above doesn't work, copy and paste the following
+                link into your browser:
+            </p>
+
+            <p style='word-break:break-all;
+                      font-size:13px;
+                      color:#7c3aed;'>
+                {reviewLink}
+            </p>
+
+            <!-- Appreciation Box -->
+            <div style='margin-top:30px;
+                        padding:18px;
+                        background:#f0fdf4;
+                        border-left:4px solid #16a34a;
+                        border-radius:6px;'>
+
+                <p style='margin:0;
+                          font-size:14px;
+                          color:#166534;
+                          line-height:1.7;'>
+                    <strong>Thank You!</strong><br>
+                    We sincerely appreciate your business and hope to welcome you
+                    again for your next journey. Safe travels, and we look
+                    forward to serving you in the future.
+                </p>
+
+            </div>
+
+            <hr style='border:none;
+                       border-top:1px solid #eeeeee;
+                       margin:30px 0;' />
+
+            <p style='font-size:13px;
+                      color:#999999;
+                      text-align:center;
+                      margin:0;'>
+                © {DateTime.UtcNow.Year} DriveLux. All rights reserved.
+            </p>
+
+        </td>
+    </tr>
+
+</table>
+
+</td>
+</tr>
+</table>
+
+</body>
+</html>";
+    }
 }

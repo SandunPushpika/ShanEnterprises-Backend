@@ -25,6 +25,7 @@ public class BookingService : IBookingService
     private readonly IPaymentService _paymentService;
     private readonly IEmailService _emailService;
     private readonly AppSettings _appSettings;
+    private readonly IUserRepository _userRepository;
 
     private const int _advancedPaymentPercentage = 40;
     private const int _refundForLessThan7 = 0;
@@ -39,7 +40,8 @@ public class BookingService : IBookingService
         IPaymentService paymentService,
         IPaymentRepository paymentRepository,
         IEmailService emailService,
-        IOptions<AppSettings> options
+        IOptions<AppSettings> options,
+        IUserRepository userRepository
         )
     {
         _repository = repository;
@@ -50,6 +52,7 @@ public class BookingService : IBookingService
         _paymentRepository = paymentRepository;
         _emailService = emailService;
         _appSettings = options.Value;
+        _userRepository = userRepository;
     }
 
     public async Task<string> AddBooking(BookingCreateRequest request)
@@ -249,6 +252,10 @@ public class BookingService : IBookingService
         if(booking == null)
             throw new NotFoundException($"Booking with id {bookingId} not found");
         
+        var user = await _userRepository.GetUserByIdAsync((int)booking.CustomerId);
+        if(user == null)
+            throw new NotFoundException($"User with id {bookingId} not found");
+        
         booking.CreatedAt = DateTime.SpecifyKind(booking.CreatedAt, DateTimeKind.Utc);
         booking.UpdatedAt = DateTime.UtcNow;
         booking.PickupDatetime = DateTime.SpecifyKind(booking.PickupDatetime, DateTimeKind.Utc);
@@ -256,6 +263,18 @@ public class BookingService : IBookingService
         booking.BookingStatus = BookingStatus.COMPLETED;
         
         await _repository.UpdateBooking(booking);
+
+        var emailRequest = new EmailSendRequest()
+        {
+            To = user.Email,
+            Body = BookingEmailTemplates.GenerateTripCompleted(user.FirstName, booking.BookingReference,
+                booking.Vehicle.Model, _appSettings.RatingUrl+$"{booking.VehicleId}"),
+            Subject = "DriveLux: Thank you riding with us!",
+            IsBodyHtml = true,
+            ReciepientName = user.FirstName,
+        };
+        
+        await _emailService.SendEmailAsync(_appSettings.MailSettings, emailRequest);
     }
 
     #region Private methods
