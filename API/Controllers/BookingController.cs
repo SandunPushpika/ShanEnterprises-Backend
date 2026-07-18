@@ -57,4 +57,12 @@ public class BookingController : ControllerBase
         await _bookingService.DeleteBooking(bookingId);
         return new ApiResponse("Booking cancelled successfully!");
     }
+
+    [CustomAuthorize(UserRole.ADMIN)]
+    [HttpGet("{bookingId}/complete")]
+    public async Task<ActionResult<ApiResponse>> GetAllBookings(int bookingId)
+    {
+        await _bookingService.CompleteBooking(bookingId);
+        return new ApiResponse("Booking complete successfully!");
+    }
 }

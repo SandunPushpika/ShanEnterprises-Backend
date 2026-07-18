@@ -243,6 +243,21 @@ public class BookingService : IBookingService
         return true;
     }
 
+    public async Task CompleteBooking(int bookingId)
+    {
+        var booking = await _repository.GetBookingById(bookingId);
+        if(booking == null)
+            throw new NotFoundException($"Booking with id {bookingId} not found");
+        
+        booking.CreatedAt = DateTime.SpecifyKind(booking.CreatedAt, DateTimeKind.Utc);
+        booking.UpdatedAt = DateTime.UtcNow;
+        booking.PickupDatetime = DateTime.SpecifyKind(booking.PickupDatetime, DateTimeKind.Utc);
+        booking.ReturnDatetime = DateTime.SpecifyKind(booking.ReturnDatetime, DateTimeKind.Utc);
+        booking.BookingStatus = BookingStatus.COMPLETED;
+        
+        await _repository.UpdateBooking(booking);
+    }
+
     #region Private methods
     
     private async Task<ExternalPaymentResponse> GenerateCheckoutSession(Booking booking)
