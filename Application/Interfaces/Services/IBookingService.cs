@@ -6,7 +6,7 @@ namespace Application.Interfaces.Services;
 
 public interface IBookingService
 {
-    Task AddBooking(BookingCreateRequest request);  
+    Task<string> AddBooking(BookingCreateRequest request);  
     Task UpdateBooking(int id, BookingUpdateRequest request);
     Task<BookingReadResponse> GetBookingById(int id);
     Task<SearchResponse<BookingReadResponse>> GetAllBookings(BookingSearchRequest request);
@@ -14,4 +14,5 @@ public interface IBookingService
     Task DeleteBooking(int id);
     Task<IReadOnlyCollection<BookedDateRangeResponse>> GetBookedDatesByVehicleId(int vehicleId);
     Task<SearchResponse<BookingReadResponse>> GetAllBookingsForUser(BookingSearchRequest request);
+    Task<bool> VerifyBooking(string sessionId);
 }

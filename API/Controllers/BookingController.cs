@@ -24,9 +24,9 @@ public class BookingController : ControllerBase
     public async Task<ActionResult<ApiResponse>> AddBooking(
         [FromBody] BookingCreateRequest request)
     {
-        await _bookingService.AddBooking(request);
+        var paymentUrl = await _bookingService.AddBooking(request);
 
-        return new ApiResponse("Booking Added");
+        return new ApiResponse(data: new {Url = paymentUrl});
     }
 
     [CustomAuthorize(UserRole.ADMIN)]
@@ -42,5 +42,12 @@ public class BookingController : ControllerBase
     {
         var result = await _bookingService.GetAllBookingsForUser(request);
         return new ApiResponse(data: result);
+    }
+
+    [HttpGet("verify-booking")]
+    public async Task<ActionResult<ApiResponse>> VerifyBooking(string sessionId)
+    {
+        var result = await _bookingService.VerifyBooking(sessionId);
+        return new ApiResponse(data: new { IsPaid = result });
     }
 }
