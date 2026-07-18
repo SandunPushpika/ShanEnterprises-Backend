@@ -2,13 +2,16 @@ using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
 using AutoMapper;
 using Core.DTOs.Request.Bookings;
+using Core.DTOs.Request.Other;
 using Core.DTOs.Request.Payment;
 using Core.DTOs.Response;
 using Core.Entities;
 using Core.Enums;
 using Core.Exceptions;
 using Core.Helpers;
+using Core.Helpers.Templates;
 using Infrastructure.Interfaces;
+using Microsoft.Extensions.Options;
 
 namespace Application.Services;
 
@@ -20,8 +23,13 @@ public class BookingService : IBookingService
     private readonly IMapper _mapper;
     private readonly IContextService _context;
     private readonly IPaymentService _paymentService;
+    private readonly IEmailService _emailService;
+    private readonly AppSettings _appSettings;
 
     private const int _advancedPaymentPercentage = 40;
+    private const int _refundForLessThan7 = 0;
+    private const int _refundForMoreThan7LessThan14 = 50;
+    private const int _refundForMoreThan14 = 100;
 
     public BookingService(
         IBookingRepository repository,
@@ -29,7 +37,9 @@ public class BookingService : IBookingService
         IMapper mapper,
         IContextService context,
         IPaymentService paymentService,
-        IPaymentRepository paymentRepository
+        IPaymentRepository paymentRepository,
+        IEmailService emailService,
+        IOptions<AppSettings> options
         )
     {
         _repository = repository;
@@ -38,6 +48,8 @@ public class BookingService : IBookingService
         _context = context;
         _paymentService = paymentService;
         _paymentRepository = paymentRepository;
+        _emailService = emailService;
+        _appSettings = options.Value;
     }
 
     public async Task<string> AddBooking(BookingCreateRequest request)
@@ -45,6 +57,10 @@ public class BookingService : IBookingService
         var user = await _context.GetUser();
         if (user == null)
             throw new UnauthorizedAccessException("User is not logged in to place the booking");
+        
+        var vehicle = await _vehicleRepository.GetVehicleById(request.VehicleId);
+        if (vehicle == null || vehicle.Status == VehicleStatus.MAINTENANCE)
+            throw new Exception("Unable to book this vehicle, Please select another vehicle");
         
         var isBooked = await _repository.IsBooked(request.VehicleId, request.PickupDateTime, request.ReturnDateTime);
         if (isBooked)
@@ -75,7 +91,12 @@ public class BookingService : IBookingService
         {
             var externalPaymentResponse = await GenerateCheckoutSession(bookRes);
             await _repository.SaveAsync();
-            return externalPaymentResponse.PaymentUrl;
+            var url =  externalPaymentResponse.PaymentUrl;
+
+            await SendBookingPaymentRequestEmail(user.FirstName, booking.BookingReference, vehicle.Model,
+                GeneratePaymentAmount(booking).ToString(), url, user.Email);
+            
+            return url;
         }
         catch (Exception)
         {
@@ -114,9 +135,41 @@ public class BookingService : IBookingService
         throw new NotImplementedException();
     }
 
-    public Task DeleteBooking(int id)
+    public async Task DeleteBooking(int id)
     {
-        throw new NotImplementedException();
+        var booking = await _repository.GetBookingById(id);
+        if (booking == null)
+            throw new NotFoundException("Booking not found");
+        
+        booking.CreatedAt = DateTime.SpecifyKind(booking.CreatedAt, DateTimeKind.Utc);
+        booking.UpdatedAt = DateTime.UtcNow;
+        booking.PickupDatetime = DateTime.SpecifyKind(booking.PickupDatetime, DateTimeKind.Utc);
+        booking.ReturnDatetime = DateTime.SpecifyKind(booking.ReturnDatetime, DateTimeKind.Utc);
+        
+        
+        if(booking.BookingStatus == BookingStatus.COMPLETED)
+            throw new Exception("You cannot cancel this booking!");
+        var payment = await _paymentRepository.GetPaymentByBookingId(booking.Id);
+        
+        if (booking.BookingStatus != BookingStatus.CONFIRMED || payment == null || payment.PaymentStatus != PaymentStatus.COMPLETED)
+        {
+            booking.BookingStatus = BookingStatus.CANCELLED;
+            await _repository.UpdateBooking(booking);
+            return;
+        }
+
+        var refundPercentage = GetRefundPercentage(booking.PickupDatetime);
+        var refundAmount = (payment.Amount * refundPercentage) / (decimal)100.0;
+        if (refundAmount > 0)
+            await _paymentService.MakeRefund(new RefundRequest()
+            {
+                Amount = (long)refundAmount,
+                Currency = "lkr",
+                PaymentId = payment.TransactionReference
+            });
+        
+        booking.BookingStatus = BookingStatus.CANCELLED;
+        await _repository.UpdateBooking(booking);
     }
 
     public async Task<IReadOnlyCollection<BookedDateRangeResponse>> GetBookedDatesByVehicleId(int vehicleId)
@@ -140,9 +193,14 @@ public class BookingService : IBookingService
 
     public async Task<bool> VerifyBooking(string sessionId)
     {
+        var user = await _context.GetUser();
         var payment = await _paymentRepository.GetPaymentByReference(sessionId);
         if(payment == null)
             throw new NotFoundException("Payment not found");
+        
+        var booking = await _repository.GetBookingById((int)payment.BookingId);
+        if (booking == null)
+            throw new NotFoundException($"Booking with id {payment.BookingId} not found");
         
         if(payment.PaymentStatus == PaymentStatus.COMPLETED)
             return true;
@@ -154,10 +212,6 @@ public class BookingService : IBookingService
         payment.PaidAt = DateTime.UtcNow;
         payment.CreatedAt = DateTime.SpecifyKind(payment.CreatedAt, DateTimeKind.Utc);;
 
-        var booking = await _repository.GetBookingById((int)payment.BookingId);
-        if (booking == null)
-            throw new NotFoundException($"Booking with id {payment.BookingId} not found");
-
         if (status == PaymentStatus.COMPLETED)
             booking.BookingStatus = BookingStatus.CONFIRMED;
         
@@ -168,16 +222,36 @@ public class BookingService : IBookingService
         await _repository.UpdateBooking(booking);
         await _paymentRepository.UpdatePayment(payment);
         
-        return status == PaymentStatus.COMPLETED;
+        if(status != PaymentStatus.COMPLETED)
+            return false;
+        
+        var emailSendRequest = new EmailSendRequest()
+        {
+            To = user.Email,
+            Body = BookingEmailTemplates.GenerateBookingConfirmed(
+                user.FirstName,
+                booking.BookingReference,
+                booking.Vehicle.Model,
+                booking.PickupDatetime.ToShortDateString(),
+                booking.ReturnDatetime.ToShortDateString()
+                ),
+            Subject = "Booking Confirmation - " + booking.BookingReference,
+            IsBodyHtml = true
+        };
+        await _emailService.SendEmailAsync(_appSettings.MailSettings, emailSendRequest);
+        
+        return true;
     }
 
+    #region Private methods
+    
     private async Task<ExternalPaymentResponse> GenerateCheckoutSession(Booking booking)
     {
         var vehicle = await _vehicleRepository.GetVehicleById(booking.VehicleId);
         if(vehicle == null)
             throw new NotFoundException($"Vehicle with id {booking.VehicleId} not found");
 
-        var amountToPay = (long)(booking.TotalAmount * _advancedPaymentPercentage / (decimal)100.0);
+        var amountToPay = GeneratePaymentAmount(booking);
         var externalPaymentRequest = new ExternalPaymentRequest()
         {
             BookingReference = booking.BookingReference,
@@ -202,4 +276,50 @@ public class BookingService : IBookingService
         
         return checkoutSession;
     }
+
+    private long GeneratePaymentAmount(Booking booking)
+    {
+        return (long)(booking.TotalAmount * _advancedPaymentPercentage / (decimal)100.0);
+    }
+
+    private Task SendBookingPaymentRequestEmail(string customerName, string bookingReference, string vehicleModel, string paymentAmount, string paymentLink, string email)
+    {
+        var emailSendRequest = new EmailSendRequest()
+        {
+            Body = BookingEmailTemplates.GeneratePaymentRequest(customerName, bookingReference, vehicleModel,
+                paymentAmount, paymentLink),
+            Subject = "Payment Request For Booking Confirmation",
+            IsBodyHtml = true,
+            To = email,
+            ReciepientName = customerName,
+        };
+        return _emailService.SendEmailAsync(_appSettings.MailSettings, emailSendRequest);
+    }
+
+    private decimal GetRefundPercentage(DateTime pickupDateTime)
+    {
+        var today = DateTime.UtcNow.Date;
+        var pickupDate = pickupDateTime.Date;
+
+        var daysBeforePickup = (pickupDate - today).Days;
+
+        decimal refundPercentage;
+
+        if (daysBeforePickup > 14)
+        {
+            refundPercentage = _refundForMoreThan14;
+        }
+        else if (daysBeforePickup >= 7 && daysBeforePickup <= 14)
+        {
+            refundPercentage = _refundForMoreThan7LessThan14;
+        }
+        else
+        {
+            refundPercentage = _refundForLessThan7;
+        }
+        
+        return refundPercentage;
+    }
+    
+    #endregion
 }

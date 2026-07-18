@@ -50,4 +50,11 @@ public class BookingController : ControllerBase
         var result = await _bookingService.VerifyBooking(sessionId);
         return new ApiResponse(data: new { IsPaid = result });
     }
+
+    [HttpDelete("{bookingId}")]
+    public async Task<ActionResult<ApiResponse>> DeleteBooking(int bookingId)
+    {
+        await _bookingService.DeleteBooking(bookingId);
+        return new ApiResponse("Booking cancelled successfully!");
+    }
 }

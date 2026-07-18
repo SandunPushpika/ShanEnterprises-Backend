@@ -18,6 +18,12 @@ public class PaymentRepository (AppDbContext context) : IPaymentRepository
         return payment;
     }
 
+    public async Task<Payments> GetPaymentByBookingId(long bookingId)
+    {
+        var payment = await context.Payments.FirstOrDefaultAsync(payment => payment.BookingId == bookingId);
+        return payment;
+    }
+
     public async Task UpdatePayment(Payments payment)
     {
         context.Payments.Update(payment);

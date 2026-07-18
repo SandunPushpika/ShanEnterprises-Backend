@@ -23,6 +23,7 @@ public class ContextService : IContextService
         var userId = claims?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         var userEmail = claims?.FindFirst(ClaimTypes.Email)?.Value;
         var role = claims?.FindFirst(ClaimTypes.Role)?.Value;
+        var name = claims?.FindFirst("name")?.Value;
 
         if (userId == null || userEmail == null || role == null)
             throw new UnauthorizedAccessException();
@@ -31,7 +32,9 @@ public class ContextService : IContextService
         {
             Id = int.Parse(userId),
             Email = userEmail,
-            Role = Enum.Parse<UserRole>(role)
+            Role = Enum.Parse<UserRole>(role),
+            FirstName = name?.Split()[0]!,
+            LastName = name?.Split()[1]!,
         });
     }
 }

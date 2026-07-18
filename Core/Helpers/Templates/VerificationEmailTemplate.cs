@@ -62,7 +62,7 @@ public static class VerificationEmailTemplate
                             <hr style='border:none; border-top:1px solid #eeeeee; margin:25px 0;' />
 
                             <p style='font-size:13px; color:#999999; text-align:center; margin:0;'>
-                                © {DateTime.UtcNow.Year} Your Company. All rights reserved.
+                                © {DateTime.UtcNow.Year} DriveLux. All rights reserved.
                             </p>
 
                         </td>

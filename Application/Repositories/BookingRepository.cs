@@ -34,7 +34,9 @@ public class BookingRepository(AppDbContext context) : IBookingRepository
 
     public async Task<Booking?> GetBookingById(int id)
     {
-        return await context.Bookings.FirstOrDefaultAsync(b => b.Id == id);
+        return await context.Bookings
+            .Include(b => b.Vehicle)
+            .FirstOrDefaultAsync(b => b.Id == id);
     }
 
     public async Task UpdateBooking(Booking booking)

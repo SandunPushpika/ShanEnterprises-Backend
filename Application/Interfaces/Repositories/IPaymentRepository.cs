@@ -6,5 +6,6 @@ public interface IPaymentRepository
 {
     Task AddPayment(Payments payment);
     Task<Payments> GetPaymentByReference(string reference);
+    Task<Payments> GetPaymentByBookingId(long bookingId);
     Task UpdatePayment(Payments payment);
 }
