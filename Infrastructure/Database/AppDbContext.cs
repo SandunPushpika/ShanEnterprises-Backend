@@ -13,6 +13,7 @@ public class AppDbContext : DbContext
     public DbSet<VerificationCodes> VerificationCodes { get; set; }
     public DbSet<Booking> Bookings { get; set; }
     public DbSet<VehicleImages> VehicleImages { get; set; }
+    public DbSet<VehicleMaintenance> VehicleMaintenances { get; set; }
     
     public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options)
@@ -30,7 +31,8 @@ public class AppDbContext : DbContext
         modelBuilder.HasPostgresEnum<UserRole>("user_role");
         modelBuilder.HasPostgresEnum<UserStatus>("user_status");
         modelBuilder.HasPostgresEnum<BookingStatus>("booking_status");
-        
+        modelBuilder.HasPostgresEnum<MaintenanceStatus>("maintenance_status");
+
         modelBuilder.Entity<Booking>()
             .Property(b => b.BookingStatus)
             .HasColumnName("booking_status");
@@ -46,5 +48,11 @@ public class AppDbContext : DbContext
             .WithMany()
             .HasForeignKey(b => b.VehicleId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<VehicleMaintenance>()
+            .HasOne(vm => vm.Vehicle)
+            .WithMany()
+            .HasForeignKey(vm => vm.VehicleId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

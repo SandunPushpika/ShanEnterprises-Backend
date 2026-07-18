@@ -42,6 +42,7 @@ public static class ServiceExtension
         services.AddScoped<IStorageService, BlobService>();
         services.AddScoped<IImageCompressor, ImageCompressor>();
         services.AddKeyedScoped<IOAuthService, GoogleOAuthService>(OAuthProvider.GOOGLE);
+        services.AddScoped<IVehicleMaintenanceService, VehicleMaintenanceService>();
         //Register all services here
     }
     
@@ -50,6 +51,8 @@ public static class ServiceExtension
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IVehicleRepository, VehicleRepository>();
         services.AddScoped<IVerificationCodeRepository, VerificationCodeRepository>();
+        services.AddScoped<IVehicleMaintenanceRepository, VehicleMaintenanceRepository>();
+
         //Register all repositories here
     }
 
@@ -72,6 +75,7 @@ public static class ServiceExtension
                     o.MapEnum<FuelType>("fuel_type");
                     o.MapEnum<TransmissionType>("transmission_type");
                     o.MapEnum<BookingStatus>("booking_status");
+                    o.MapEnum<MaintenanceStatus>("maintenance_status");
                 });
             options.UseSnakeCaseNamingConvention();
         });
