@@ -1,7 +1,9 @@
 using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
 using AutoMapper;
+using Core.DTOs.Request.Common;
 using Core.DTOs.Request.Review;
+using Core.DTOs.Response;
 using Core.Entities;
 using Core.Enums;
 using Core.Exceptions;
@@ -13,18 +15,21 @@ public class ReviewService : IReviewService
     private readonly IReviewRepository _reviewRepository;
     private readonly IVehicleRepository _vehicleRepository;
     private readonly IContextService _contextService;
+    private readonly IBookingRepository _bookingRepository;
     private readonly IMapper _mapper;
 
     public ReviewService(
         IReviewRepository reviewRepository,
         IVehicleRepository vehicleRepository,
         IContextService contextService,
+        IBookingRepository bookingRepository,
         IMapper mapper)
     {
         _reviewRepository = reviewRepository;
         _vehicleRepository = vehicleRepository;
         _contextService = contextService;
         _mapper = mapper;
+        _bookingRepository = bookingRepository;
     }
     public async Task AddReview(int vehicleId, AddReviewRequest request)
     {
@@ -68,7 +73,66 @@ public class ReviewService : IReviewService
         await _reviewRepository.AddReview(review);
         
         vehicle.AverageRating =
-            await _reviewRepository.GetVehicleAverageRating(vehicleId);
+            await _reviewRepository.GetVehicleAverageRating(vehicleId);   
+    }
+
+    public async Task<UserReviewResponse> GetUserReviews(int vehicleId)
+    {
+        User user;
+        try
+        {
+            user = await _contextService.GetUser();
+            if (user == null)
+                return new UserReviewResponse();
+        }
+        catch (Exception ex)
+        {
+            return new UserReviewResponse();
+        }
         
+        var booking = await _bookingRepository.GetBookingByVehicleIdAndUserId(vehicleId, (int)user.Id);
+        if (booking == null)
+            return new UserReviewResponse()
+            {
+                CanReview = false,
+                HasReviewed = false,
+                ReviewId = null
+            };
+
+        var review = await _reviewRepository.GetReviewByBookingId(booking.Id);
+        if (review == null)
+            return new UserReviewResponse()
+            {
+                CanReview = true,
+                HasReviewed = false,
+                ReviewId = null
+            };
+        
+        return new UserReviewResponse()
+        {
+            CanReview = false,
+            HasReviewed = true,
+            ReviewId = review.Id,
+        };
+    }
+
+    public async Task<SearchResponse<ReviewResponse>> GetReviews(int vehicleId, SearchRequest request)
+    {
+        var res = await _reviewRepository.GetReviewsByVehicleId(vehicleId, request.PageNumber, request.PageSize);
+
+        var reviewResponses = res.Data.Select(r => new ReviewResponse()
+        {
+            Id = r.Id,
+            Rating = r.VehicleRating,
+            ReviewText = r.Comment
+        }).ToList();
+
+        return new SearchResponse<ReviewResponse>()
+        {
+            Data = reviewResponses,
+            Total = res.Total,
+            PageNumber = res.PageNumber,
+            PageSize = res.PageSize
+        };
     }
 }

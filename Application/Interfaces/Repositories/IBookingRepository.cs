@@ -1,6 +1,8 @@
 using Core.DTOs.Request.Bookings;
 using Core.DTOs.Response;
 using Core.Entities;
+using Core.Enums;
+
 namespace Application.Interfaces.Repositories;
 
 public interface IBookingRepository
@@ -13,4 +15,6 @@ public interface IBookingRepository
     Task<bool> IsBooked(int vehicleId, DateTime from, DateTime to);
     Task<IReadOnlyCollection<BookedDateRangeResponse>> GetBookedDatesByVehicleId(int vehicleId);
     Task SaveAsync();
+    Task<Booking> GetBookingByVehicleIdAndUserId(int vehicleId, int userId,
+        BookingStatus status = BookingStatus.COMPLETED);
 }

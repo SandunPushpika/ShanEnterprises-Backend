@@ -1,5 +1,6 @@
 using Application.Interfaces.Services;
 using Core.DTOs.Request;
+using Core.DTOs.Request.Common;
 using Core.DTOs.Request.Review;
 using Core.DTOs.Response;
 using Core.Enums;
@@ -102,7 +103,7 @@ public class VehicleController:Controller
     }
     
     [CustomAuthorize(UserRole.CUSTOMER)]
-    [HttpPost("{vehicleId}/review")]
+    [HttpPost("{vehicleId}/add-review")]
     public async Task<ActionResult<ApiResponse>> AddReview(
         int vehicleId,
         [FromBody] AddReviewRequest request)
@@ -114,5 +115,20 @@ public class VehicleController:Controller
         return new ApiResponse(
             "Review added successfully");
     }
-    
+
+    [AllowAnonymous]
+    [HttpPost("{vehicleId}/reviews")]
+    public async Task<ActionResult<ApiResponse>> GetVehicleReviews(int vehicleId, SearchRequest request)
+    {
+        var res = await _reviewService.GetReviews(vehicleId, request);
+        return new ApiResponse(data: res);
+    }
+
+    [AllowAnonymous]
+    [HttpGet("{id}/review-user")]
+    public async Task<ActionResult<ApiResponse>> GetReview(int id)
+    {
+        var res = await _reviewService.GetUserReviews(id);
+        return new ApiResponse(data: res);
+    }
 }

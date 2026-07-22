@@ -140,4 +140,13 @@ public class BookingRepository(AppDbContext context) : IBookingRepository
 
         return ranges.AsReadOnly();
     }
+
+    public async Task<Booking> GetBookingByVehicleIdAndUserId(int vehicleId, int userId, BookingStatus status = BookingStatus.COMPLETED)
+    {
+        var booking = await context.Bookings
+            .Where(b => b.VehicleId == vehicleId && b.CustomerId == userId && b.BookingStatus == status)
+            .OrderBy(b => b.CreatedAt)
+            .FirstOrDefaultAsync();
+        return booking;
+    }
 }
