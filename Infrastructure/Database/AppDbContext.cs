@@ -15,6 +15,7 @@ public class AppDbContext : DbContext
     public DbSet<VehicleImages> VehicleImages { get; set; }
     public DbSet<Payments> Payments { get; set; }
     public DbSet<Review> Reviews { get; set; }
+    public DbSet<Driver> Drivers { get; set; }
     
     public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options)
@@ -33,6 +34,8 @@ public class AppDbContext : DbContext
         modelBuilder.HasPostgresEnum<BookingStatus>("booking_status");
         modelBuilder.HasPostgresEnum<PaymentStatus>("payment_status");
         modelBuilder.HasPostgresEnum<PaymentMethod>("payment_method");
+        modelBuilder.HasPostgresEnum<DriverStatus>("driver_status");
+        modelBuilder.HasPostgresEnum<AvailabilityStatus>("availability_status");
         
         modelBuilder.Entity<Booking>()
             .Property(b => b.BookingStatus)
@@ -83,5 +86,29 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Review>()
             .Property(r => r.CreatedAt)
             .HasColumnName("created_at");
+
+        modelBuilder.Entity<Driver>()
+            .HasOne(d => d.User)
+            .WithMany()
+            .HasForeignKey(d => d.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Driver>()
+            .HasOne(d => d.ApprovedByUser)
+            .WithMany()
+            .HasForeignKey(d => d.ApprovedBy)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<Driver>()
+            .Property(d => d.DriverStatus)
+            .HasColumnName("driver_status");
+
+        modelBuilder.Entity<Driver>()
+            .HasIndex(d => d.UserId)
+            .IsUnique();
+
+        modelBuilder.Entity<Driver>()
+            .HasIndex(d => d.LicenseNumber)
+            .IsUnique();
     }
 }
