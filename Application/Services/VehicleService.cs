@@ -5,19 +5,23 @@ using Core.DTOs.Request;
 using Core.Entities;
 using Core.Exceptions;
 using Core.DTOs.Response;
+using Core.DTOs.Response.Recommendation;
 using Core.Enums;
+using Infrastructure.Interfaces;
 
 namespace Application.Services;
 
 public class VehicleService : IVehicleService
 {
     private readonly IVehicleRepository _repository;
+    private readonly IRecommendationService _recommendationService;
     private readonly IMapper _mapper;
     
-    public VehicleService(IVehicleRepository repository, IMapper mapper)
+    public VehicleService(IVehicleRepository repository, IRecommendationService recommendationService,IMapper mapper)
     {
         _repository = repository;
         _mapper = mapper;
+        _recommendationService = recommendationService;
     }
 
     public async Task AddVehicle(VehicleCreateRequest request)
@@ -57,14 +61,33 @@ public class VehicleService : IVehicleService
     public async Task<SearchResponse<VehicleResponse>> SearchVehicles(VehicleSearchRequest request)
     {
         var (vehicles, total) = await _repository.SearchVehicles(request);
-        var vehicleResponses = _mapper.Map<IReadOnlyCollection<VehicleResponse>>(vehicles);
-        return new SearchResponse<VehicleResponse>
+
+        RecommendationResponse? recommendedVehicles = null;
+        if(!string.IsNullOrWhiteSpace(request.Search))
+            recommendedVehicles = await _recommendationService.GetVehicleRecommendations(request.Search);
+
+        if (recommendedVehicles == null || recommendedVehicles.Recommendations.Count == 0 || recommendedVehicles.Recommendations[0].Similarity < 0.5)
         {
-            Data = vehicleResponses,
-            Total = total,
-            PageNumber = request.PageNumber,
-            PageSize = request.PageSize
-        };
+            var vehicleResponses = _mapper.Map<IReadOnlyCollection<VehicleResponse>>(vehicles);
+            return new SearchResponse<VehicleResponse>
+            {
+                Data = vehicleResponses,
+                Total = total,
+                PageNumber = request.PageNumber,
+                PageSize = request.PageSize
+            };
+        }
+
+        request.Search = null;
+        request.VehicleIds = recommendedVehicles.Recommendations.Select(v => v.VehicleId).ToList();
+        var (recommended, _) = await _repository.SearchVehicles(request);
+        
+        return MapVehicleArrays(
+            vehicles,
+            recommended,
+            request,
+            total
+        );
     }
 
     public async Task<IReadOnlyCollection<VehicleBrand>> GetAllBrands()
@@ -116,5 +139,35 @@ public class VehicleService : IVehicleService
         await _repository.AddVehicleImagesAsync(images);
     }
 
+    private SearchResponse<VehicleResponse> MapVehicleArrays(
+        IReadOnlyCollection<Vehicle> dbVehicles,
+        IReadOnlyCollection<Vehicle> recommendedVehicles,
+        VehicleSearchRequest request,
+        int total)
+    {
+        var topRecommendations = recommendedVehicles
+            .Take(3)
+            .ToList();
+
+        var remainingVehicles = dbVehicles
+            .Where(v => topRecommendations.All(r => r.Id != v.Id))
+            .ToList();
+
+        var mergedVehicles = topRecommendations
+            .Concat(remainingVehicles)
+            .Take(request.PageSize)
+            .ToList();
+
+        var response = _mapper.Map<List<VehicleResponse>>(mergedVehicles);
+
+        return new SearchResponse<VehicleResponse>
+        {
+            Data = response,
+            Total = total,
+            PageNumber = request.PageNumber,
+            PageSize = request.PageSize
+        };
+    }
+    
     #endregion
 }

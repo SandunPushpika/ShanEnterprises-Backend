@@ -29,4 +29,5 @@ public class VehicleResponse
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
     public List<VehicleImages>? VehicleImages { get; set; }
+    public bool IsRecommended { get; set; }
 }

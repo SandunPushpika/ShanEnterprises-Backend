@@ -7,6 +7,7 @@ using Core.DTOs.Response;
 using Core.Entities;
 using Core.Enums;
 using Core.Exceptions;
+using Infrastructure.Interfaces;
 
 namespace Application.Services;
 
@@ -17,19 +18,22 @@ public class ReviewService : IReviewService
     private readonly IContextService _contextService;
     private readonly IBookingRepository _bookingRepository;
     private readonly IMapper _mapper;
+    private readonly IRecommendationService _recommendationService;
 
     public ReviewService(
         IReviewRepository reviewRepository,
         IVehicleRepository vehicleRepository,
         IContextService contextService,
         IBookingRepository bookingRepository,
-        IMapper mapper)
+        IMapper mapper,
+        IRecommendationService recommendationService)
     {
         _reviewRepository = reviewRepository;
         _vehicleRepository = vehicleRepository;
         _contextService = contextService;
         _mapper = mapper;
         _bookingRepository = bookingRepository;
+        _recommendationService = recommendationService;
     }
     public async Task AddReview(int vehicleId, AddReviewRequest request)
     {
@@ -73,7 +77,9 @@ public class ReviewService : IReviewService
         await _reviewRepository.AddReview(review);
         
         vehicle.AverageRating =
-            await _reviewRepository.GetVehicleAverageRating(vehicleId);   
+            await _reviewRepository.GetVehicleAverageRating(vehicleId);
+
+        await _recommendationService.UpdateReview(vehicleId);
     }
 
     public async Task<UserReviewResponse> GetUserReviews(int vehicleId)

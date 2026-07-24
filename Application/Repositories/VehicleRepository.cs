@@ -68,6 +68,8 @@ public class VehicleRepository(AppDbContext context) : IVehicleRepository
                 (v.Brand != null && EF.Functions.ILike(v.Brand.Name, $"%{request.Search}%")) ||
                 EF.Functions.ILike(v.Model, $"%{request.Search}%"));
         }
+        if(request.VehicleIds != null && request.VehicleIds.Any())
+            query = query.Where(v => request.VehicleIds.Contains(v.Id));
         
         query = query.Where(v => v.Status != VehicleStatus.UNAVAILABLE);
         

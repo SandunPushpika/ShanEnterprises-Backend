@@ -1,4 +1,5 @@
-﻿using Core.Enums;
+﻿using Core.DTOs.Response.Recommendation;
+using Core.Enums;
 
 namespace Core.DTOs.Request;
 
@@ -14,5 +15,6 @@ public class VehicleSearchRequest
     public DateTime? FromDate { get; set; }
     public DateTime? ToDate { get; set; }
     public string? Search { get; set; }
+    public List<int>? VehicleIds { get; set; }
 }
 

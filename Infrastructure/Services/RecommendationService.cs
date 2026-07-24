@@ -1,3 +1,4 @@
+using System.Text;
 using System.Text.Json;
 using Core.DTOs.Response.Recommendation;
 using Core.Helpers;
@@ -42,7 +43,8 @@ public class RecommendationService : IRecommendationService
         try
         {
             var jsonString = JsonSerializer.Serialize(new {vehicle_id = vehicleId});
-            var result = await _httpClient.PostAsync("/review", new StringContent(jsonString));
+            var content = new StringContent(jsonString, Encoding.UTF8, "application/json");
+            var result = await _httpClient.PostAsync("review", content);
             var responseContent = await result.Content.ReadAsStringAsync();
             
             _logger.LogInformation($"review result status: {result.StatusCode}");
@@ -72,7 +74,8 @@ public class RecommendationService : IRecommendationService
         try
         {
             var jsonString = JsonSerializer.Serialize(new {query = query, limit = limit});
-            var result = await _httpClient.PostAsync("/vehicles/rank", new StringContent(jsonString));
+            var content = new StringContent(jsonString, Encoding.UTF8, "application/json");
+            var result = await _httpClient.PostAsync("vehicles/rank", content);
             var responseContent = await result.Content.ReadAsStringAsync();
 
             if (result.IsSuccessStatusCode)
