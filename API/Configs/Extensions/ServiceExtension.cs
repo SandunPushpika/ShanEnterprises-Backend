@@ -28,7 +28,8 @@ public static class ServiceExtension
         services.RegisterValidators();
         services.AddCorsConfig();
         services.AddHttpClient();
-        services.AddAutoMapper(cfg => { }, typeof(UserProfile).Assembly); 
+        services.AddAutoMapper(cfg => { }, typeof(UserProfile).Assembly);
+        services.AddMemoryCache();
         return services;
     }
 
