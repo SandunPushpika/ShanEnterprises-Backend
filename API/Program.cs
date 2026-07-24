@@ -1,7 +1,3 @@
-using Application.Interfaces.Repositories;
-using Application.Interfaces.Services;
-using Application.Repositories;
-using Application.Services;
 using Core.Helpers;
 using Core.Validators;
 using DotNetEnv;
@@ -36,10 +32,6 @@ builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<UserUpdateRequestValidator>();
 builder.Services.AddAuthenticationConfig(appSettings.JwtSettings);
 builder.Services.AddHttpContextAccessor();
-builder.Services.AddScoped<IBookingRepository, BookingRepository>();
-builder.Services.AddScoped<IBookingService, BookingService>();
-builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
-builder.Services.AddScoped<IReviewService, ReviewService>();
 
 var app = builder.Build();
 

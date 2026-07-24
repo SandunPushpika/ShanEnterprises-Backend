@@ -44,6 +44,9 @@ public static class ServiceExtension
         services.AddKeyedScoped<IOAuthService, GoogleOAuthService>(OAuthProvider.GOOGLE);
         services.AddScoped<IPaymentService, StripeService>();
         services.AddScoped<IDriverService, DriverService>();
+        services.AddScoped<IBookingService, BookingService>();
+        services.AddScoped<IReviewService, ReviewService>();
+        services.AddScoped<IRecommendationService, RecommendationService>();
         //Register all services here
     }
     
@@ -54,6 +57,8 @@ public static class ServiceExtension
         services.AddScoped<IVerificationCodeRepository, VerificationCodeRepository>();
         services.AddScoped<IPaymentRepository, PaymentRepository>();
         services.AddScoped<IDriverRepository, DriverRepository>();
+        services.AddScoped<IBookingRepository, BookingRepository>();
+        services.AddScoped<IReviewRepository, ReviewRepository>();
         //Register all repositories here
     }
 
