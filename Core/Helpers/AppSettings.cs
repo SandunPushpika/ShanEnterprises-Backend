@@ -10,6 +10,8 @@ public class AppSettings
     public MailSettings MailSettings { get; set; }
     public GoogleSettings Google { get; set; }
     public StripeConfig StripeConfigs { get; set; }
+    public string RecommendationServiceUrl { get; set; } 
+    public string RecommendationServiceApiKey { get; set; } 
 }
 
 public class JwtSettings
