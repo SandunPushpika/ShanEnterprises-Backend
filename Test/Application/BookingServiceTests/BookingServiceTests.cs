@@ -1,4 +1,5 @@
 using Core.DTOs.Request.Bookings;
+using Core.DTOs.Request.Payment;
 using Core.DTOs.Response;
 using Core.Entities;
 using Core.Exceptions;
@@ -89,6 +90,22 @@ public partial class BookingServiceTests
             .Setup(x => x.IsBooked(request.VehicleId, request.PickupDateTime, request.ReturnDateTime))
             .ReturnsAsync(false);
 
+        _bookingRepositoryMock
+            .Setup(x => x.AddBooking(mappedBooking))
+            .ReturnsAsync(mappedBooking);
+
+        _vehicleRepositoryMock
+            .Setup(x => x.GetVehicleById(request.VehicleId, It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>()))
+            .ReturnsAsync(new Vehicle { Id = 1, Model = "Tesla" });
+
+        _paymentServiceMock
+            .Setup(x => x.CreateCheckoutSession(It.IsAny<ExternalPaymentRequest>()))
+            .ReturnsAsync(new ExternalPaymentResponse { PaymentUrl = "http://payment.url", ExternalPaymentId = "session_id" });
+
+        _paymentRepositoryMock
+            .Setup(x => x.AddPayment(It.IsAny<Payments>()))
+            .Returns(Task.CompletedTask);
+
         _mapperMock
             .Setup(x => x.Map<Booking>(request))
             .Returns(mappedBooking);
@@ -105,6 +122,69 @@ public partial class BookingServiceTests
         mappedBooking.BookingReference.Should().NotBeNullOrEmpty();
 
         _bookingRepositoryMock.Verify(x => x.AddBooking(mappedBooking), Times.Once);
+        _bookingRepositoryMock.Verify(x => x.SaveAsync(), Times.Exactly(2));
+    }
+
+    [Test]
+    public async Task AddBooking_ShouldDeleteBookingAndThrowException_WhenPaymentSessionGenerationFails()
+    {
+        // Arrange
+        var user = new User { Id = 10 };
+        _applicationContextMock
+            .Setup(x => x.GetUser())
+            .Returns(Task.FromResult(user));
+
+        var request = new BookingCreateRequest
+        {
+            VehicleId = 1,
+            PickupDateTime = DateTime.UtcNow.AddDays(1),
+            ReturnDateTime = DateTime.UtcNow.AddDays(5)
+        };
+
+        var mappedBooking = new Booking
+        {
+            VehicleId = request.VehicleId,
+            PickupDatetime = request.PickupDateTime,
+            ReturnDatetime = request.ReturnDateTime,
+            BaseRentalCost = 100,
+            DriverFee = 20,
+            TaxAmount = 10,
+            DiscountAmount = 5
+        };
+
+        _bookingRepositoryMock
+            .Setup(x => x.IsBooked(request.VehicleId, request.PickupDateTime, request.ReturnDateTime))
+            .ReturnsAsync(false);
+
+        _bookingRepositoryMock
+            .Setup(x => x.AddBooking(mappedBooking))
+            .ReturnsAsync(mappedBooking);
+
+        _vehicleRepositoryMock
+            .Setup(x => x.GetVehicleById(request.VehicleId, It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>()))
+            .ReturnsAsync(new Vehicle { Id = 1, Model = "Tesla" });
+
+        _paymentServiceMock
+            .Setup(x => x.CreateCheckoutSession(It.IsAny<ExternalPaymentRequest>()))
+            .ThrowsAsync(new Exception("Stripe failure"));
+
+        _mapperMock
+            .Setup(x => x.Map<Booking>(request))
+            .Returns(mappedBooking);
+
+        _bookingRepositoryMock
+            .Setup(x => x.DeleteBooking(mappedBooking))
+            .Returns(Task.CompletedTask);
+
+        // Act
+        Func<Task> act = async () => await _bookingService.AddBooking(request);
+
+        // Assert
+        await act.Should().ThrowAsync<Exception>().WithMessage("Stripe failure");
+
+        _bookingRepositoryMock.Verify(x => x.AddBooking(mappedBooking), Times.Once);
+        _bookingRepositoryMock.Verify(x => x.SaveAsync(), Times.Once);
+        _bookingRepositoryMock.Verify(x => x.DeleteBooking(mappedBooking), Times.Once);
     }
 
     #endregion

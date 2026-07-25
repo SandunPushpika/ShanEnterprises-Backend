@@ -8,6 +8,7 @@ public class AppSettings
     public JwtSettings JwtSettings { get; set; }
     public MailSettings MailSettings { get; set; }
     public GoogleSettings Google { get; set; }
+    public StripeConfig StripeConfigs { get; set; }
 }
 
 public class JwtSettings
@@ -31,4 +32,11 @@ public class GoogleSettings
     public string ClientSecret { get; set; }
     public string Scopes { get; set; }
     public string CallbackUrl { get; set; }
+}
+
+public class StripeConfig
+{
+    public string SecretKey { get; set; }
+    public string PublicKey { get; set; }
+    public string RedirectUri { get; set; }
 }

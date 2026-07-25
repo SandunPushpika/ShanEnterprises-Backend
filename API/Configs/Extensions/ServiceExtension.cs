@@ -43,6 +43,7 @@ public static class ServiceExtension
         services.AddScoped<IImageCompressor, ImageCompressor>();
         services.AddKeyedScoped<IOAuthService, GoogleOAuthService>(OAuthProvider.GOOGLE);
         services.AddScoped<IVehicleMaintenanceService, VehicleMaintenanceService>();
+        services.AddScoped<IPaymentService, StripeService>();
         //Register all services here
     }
     
@@ -53,6 +54,7 @@ public static class ServiceExtension
         services.AddScoped<IVerificationCodeRepository, VerificationCodeRepository>();
         services.AddScoped<IVehicleMaintenanceRepository, VehicleMaintenanceRepository>();
 
+        services.AddScoped<IPaymentRepository, PaymentRepository>();
         //Register all repositories here
     }
 
@@ -76,6 +78,8 @@ public static class ServiceExtension
                     o.MapEnum<TransmissionType>("transmission_type");
                     o.MapEnum<BookingStatus>("booking_status");
                     o.MapEnum<MaintenanceStatus>("maintenance_status");
+                    o.MapEnum<PaymentStatus>("payment_status");
+                    o.MapEnum<PaymentMethod>("payment_method");
                 });
             options.UseSnakeCaseNamingConvention();
         });
