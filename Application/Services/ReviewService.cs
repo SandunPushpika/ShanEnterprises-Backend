@@ -130,7 +130,8 @@ public class ReviewService : IReviewService
         {
             Id = r.Id,
             Rating = r.VehicleRating,
-            ReviewText = r.Comment
+            ReviewText = r.Comment,
+            CreatedAt = r.CreatedAt,
         }).ToList();
 
         return new SearchResponse<ReviewResponse>()
@@ -140,5 +141,14 @@ public class ReviewService : IReviewService
             PageNumber = res.PageNumber,
             PageSize = res.PageSize
         };
+    }
+
+    public async Task DeleteReview(int reviewId)
+    {
+        var review = await _reviewRepository.DeleteReview(reviewId);
+        if(review?.VehicleId == null)
+            return;
+        
+        await _recommendationService.UpdateReview((int) review.VehicleId);
     }
 }

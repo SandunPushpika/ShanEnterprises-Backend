@@ -131,4 +131,12 @@ public class VehicleController:Controller
         var res = await _reviewService.GetUserReviews(id);
         return new ApiResponse(data: res);
     }
+    
+    [AllowAnonymous]
+    [HttpDelete("{vehicleId}/reviews/{reviewId}")]
+    public async Task<ActionResult<ApiResponse>> DeleteReview(int vehicleId, int reviewId)
+    {
+        await _reviewService.DeleteReview(reviewId);
+        return new ApiResponse(data: "Review deleted");
+    }
 }

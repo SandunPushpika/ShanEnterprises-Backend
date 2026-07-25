@@ -85,4 +85,14 @@ public class ReviewRepository(AppDbContext context) : IReviewRepository
             PageSize = pageSize
         };
     }
+
+    public async Task<Review?> DeleteReview(int reviewId)
+    {
+        var review = await context.Reviews.Where(r => r.Id == reviewId).FirstOrDefaultAsync();
+        if(review != null)
+            context.Reviews.Remove(review);
+        await context.SaveChangesAsync();
+        
+        return review;
+    }
 }
