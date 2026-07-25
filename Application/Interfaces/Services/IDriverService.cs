@@ -10,6 +10,6 @@ public interface IDriverService
     Task RejectDriverAsync(int driverId);
     Task<SearchResponse<DriverResponse>> GetDriversByStatusAsync(DriverSearchRequest request);
     Task<DriverStatusResponse> GetMyDriverStatusAsync();
-    Task<IReadOnlyCollection<DriverResponse>> GetAvailableDriversAsync();
+    Task<IReadOnlyCollection<DriverResponse>> GetAvailableDriversAsync(AvailableDriverRequest request);
     Task<DriverResponse> GetDriverByIdAsync(int driverId);
 }

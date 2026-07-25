@@ -59,10 +59,11 @@ public class DriverController : ControllerBase
         return new ApiResponse(data: result);
     }
 
-    [HttpGet("available")]
-    public async Task<ActionResult<ApiResponse>> GetAvailableDrivers()
+    [HttpPost("available")]
+    public async Task<ActionResult<ApiResponse>> GetAvailableDrivers(
+        [FromBody] AvailableDriverRequest request)
     {
-        var result = await _driverService.GetAvailableDriversAsync();
+        var result = await _driverService.GetAvailableDriversAsync(request);
         return new ApiResponse(data: result);
     }
 

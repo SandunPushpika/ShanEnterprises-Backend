@@ -120,9 +120,11 @@ public class DriverService : IDriverService
         };
     }
 
-    public async Task<IReadOnlyCollection<DriverResponse>> GetAvailableDriversAsync()
+    public async Task<IReadOnlyCollection<DriverResponse>> GetAvailableDriversAsync(AvailableDriverRequest request)
     {
-        var drivers = await _repository.GetAvailableDriversAsync();
+        var drivers = await _repository.GetAvailableDriversAsync(
+            request.PickupDatetime,
+            request.ReturnDatetime);
         return _mapper.Map<IReadOnlyCollection<DriverResponse>>(drivers);
     }
 

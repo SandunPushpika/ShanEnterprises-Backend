@@ -68,11 +68,31 @@ public class DriverRepository(AppDbContext context) : IDriverRepository
         return (drivers, total);
     }
 
-    public async Task<IReadOnlyCollection<Driver>> GetAvailableDriversAsync()
+    public async Task<IReadOnlyCollection<Driver>> GetAvailableDriversAsync(
+        DateTime pickupDatetime, DateTime returnDatetime)
     {
+        var blockingStatuses = new[]
+        {
+            BookingStatus.PENDING,
+            BookingStatus.CONFIRMED,
+            BookingStatus.ONGOING
+        };
+
+        var busyDriverIds = context.Bookings
+            .Where(b =>
+                b.DriverId.HasValue &&
+                blockingStatuses.Contains(b.BookingStatus) &&
+                b.PickupDatetime  < returnDatetime &&
+                b.ReturnDatetime  > pickupDatetime)
+            .Select(b => b.DriverId!.Value);
+
         return await context.Drivers
             .Include(d => d.User)
-            .Where(d => d.DriverStatus == DriverStatus.APPROVED && d.Availability == AvailabilityStatus.AVAILABLE)
+            .Where(d =>
+                d.DriverStatus == DriverStatus.APPROVED &&
+                d.Availability == AvailabilityStatus.AVAILABLE &&
+                !busyDriverIds.Contains(d.Id))
+            .OrderBy(d => d.User.FirstName)
             .ToListAsync();
     }
 }
