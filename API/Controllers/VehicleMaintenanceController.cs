@@ -47,7 +47,6 @@ public class VehicleMaintenanceController : ControllerBase
         return new ApiResponse("Vehicle Maintenance Updated");
     }
 
-    [CustomAuthorize(UserRole.ADMIN)]
     [HttpDelete("{id}")]
     public async Task<ActionResult<ApiResponse>> DeleteVehicleMaintenance(int id)
     {

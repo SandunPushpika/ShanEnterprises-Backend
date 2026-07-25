@@ -51,8 +51,7 @@ public class VehicleMaintenanceService : IVehicleMaintenanceService
     }
 
     public async Task<SearchResponse<MaintenanceReadResponse>> GetAllVehicleMaintenances()
-    {
-        
+    { 
         var (maintenances, total) = await _vehicleMaintenanceRepository.GetAllVehicleMaintenances();
         var response = new SearchResponse<MaintenanceReadResponse>
     {
@@ -73,7 +72,6 @@ public class VehicleMaintenanceService : IVehicleMaintenanceService
 
     public async Task UpdateVehicleMaintenance(int id, MaintenanceUpdateRequest request)
     {
-        
         var vehicleMaintenance = await _vehicleMaintenanceRepository.GetVehicleMaintenanceById(id);
         if (vehicleMaintenance == null)
             throw new NotFoundException($"Maintenance record with id {id} not found");
@@ -106,7 +104,11 @@ public class VehicleMaintenanceService : IVehicleMaintenanceService
         if (vehicleMaintenance == null)
             throw new NotFoundException($"Maintenance record with id {id} not found");
 
-        await _vehicleMaintenanceRepository.DeleteVehicleMaintenance(vehicleMaintenance);
+        vehicleMaintenance.Status = MaintenanceStatus.DELETED;
+        vehicleMaintenance.CreatedAt = DateTime.SpecifyKind(vehicleMaintenance.CreatedAt, DateTimeKind.Utc);
+        vehicleMaintenance.UpdatedAt = DateTime.UtcNow;
+
+        await _vehicleMaintenanceRepository.UpdateVehicleMaintenance(vehicleMaintenance);
 
         var vehicle = await _vehicleRepository.GetVehicleById(vehicleMaintenance.VehicleId);
         if (vehicle != null)

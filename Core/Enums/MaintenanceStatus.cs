@@ -10,4 +10,7 @@ public enum MaintenanceStatus
     
     [PgName("UNDER_MAINTENANCE")]
     UNDER_MAINTENANCE,
+
+    [PgName("DELETED")]
+    DELETED
 }

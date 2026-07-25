@@ -23,6 +23,7 @@ public class VehicleMaintenanceRepository(AppDbContext context) : IVehicleMainte
         var query = context.VehicleMaintenances
         .Include(m => m.Vehicle)
         .ThenInclude(v => v.Brand)
+        .Where(m => m.Status != MaintenanceStatus.DELETED)
         .AsQueryable();
         var total = await query.CountAsync();
         
@@ -36,17 +37,15 @@ public class VehicleMaintenanceRepository(AppDbContext context) : IVehicleMainte
     public async Task UpdateVehicleMaintenance(VehicleMaintenance vehicleMaintenance)
     {
         context.VehicleMaintenances.Update(vehicleMaintenance);
-        
         await context.SaveChangesAsync();
     }
 
     public async Task<VehicleMaintenance?> GetVehicleMaintenanceById(int id)
     {
-    
          return await context.VehicleMaintenances
             .Include(m => m.Vehicle)
             .ThenInclude(v => v.Brand)
-            .FirstOrDefaultAsync(m => m.Id == id);
+            .FirstOrDefaultAsync(m => m.Id == id && m.Status != MaintenanceStatus.DELETED);
     }
 
     public async Task DeleteVehicleMaintenance(VehicleMaintenance vehicleMaintenance)
@@ -60,6 +59,7 @@ public class VehicleMaintenanceRepository(AppDbContext context) : IVehicleMainte
         var query = context.VehicleMaintenances
             .Include(m => m.Vehicle)
             .ThenInclude(v => v.Brand)
+            .Where(m => m.Status != MaintenanceStatus.DELETED)
             .AsQueryable();
 
         if (request.VehicleId.HasValue && request.VehicleId > 0)
@@ -90,7 +90,9 @@ public class VehicleMaintenanceRepository(AppDbContext context) : IVehicleMainte
     public async Task<IReadOnlyCollection<MaintenanceStatsResponse>> GetMaintenanceStats(string groupBy, int? year)
     {
 
-        var query = context.VehicleMaintenances.AsQueryable();
+        var query = context.VehicleMaintenances
+            .Where(m => m.Status != MaintenanceStatus.DELETED)
+            .AsQueryable();
     
         if (year.HasValue)
         {

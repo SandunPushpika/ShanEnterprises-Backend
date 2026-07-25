@@ -74,7 +74,8 @@ CREATE TYPE notification_type AS ENUM (
 
 CREATE TYPE maintenance_status AS ENUM (
     'UNDER_MAINTENANCE',
-    'COMPLETED'
+    'COMPLETED',
+    'DELETED'
 );
 
 -- USERS TABLE
