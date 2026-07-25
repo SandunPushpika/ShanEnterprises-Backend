@@ -119,4 +119,19 @@ public class DriverService : IDriverService
             Message    = $"Your driver request status is {driver.DriverStatus}."
         };
     }
+
+    public async Task<IReadOnlyCollection<DriverResponse>> GetAvailableDriversAsync()
+    {
+        var drivers = await _repository.GetAvailableDriversAsync();
+        return _mapper.Map<IReadOnlyCollection<DriverResponse>>(drivers);
+    }
+
+    public async Task<DriverResponse> GetDriverByIdAsync(int driverId)
+    {
+        var driver = await _repository.GetDriverByIdAsync(driverId);
+        if (driver == null)
+            throw new NotFoundException($"Driver with id {driverId} not found.");
+            
+        return _mapper.Map<DriverResponse>(driver);
+    }
 }

@@ -67,4 +67,12 @@ public class DriverRepository(AppDbContext context) : IDriverRepository
 
         return (drivers, total);
     }
+
+    public async Task<IReadOnlyCollection<Driver>> GetAvailableDriversAsync()
+    {
+        return await context.Drivers
+            .Include(d => d.User)
+            .Where(d => d.DriverStatus == DriverStatus.APPROVED && d.Availability == AvailabilityStatus.AVAILABLE)
+            .ToListAsync();
+    }
 }

@@ -58,4 +58,19 @@ public class DriverController : ControllerBase
         var result = await _driverService.GetMyDriverStatusAsync();
         return new ApiResponse(data: result);
     }
+
+    [HttpGet("available")]
+    public async Task<ActionResult<ApiResponse>> GetAvailableDrivers()
+    {
+        var result = await _driverService.GetAvailableDriversAsync();
+        return new ApiResponse(data: result);
+    }
+
+    [CustomAuthorize(UserRole.ADMIN)]
+    [HttpGet("{driverId}")]
+    public async Task<ActionResult<ApiResponse>> GetDriverById(int driverId)
+    {
+        var result = await _driverService.GetDriverByIdAsync(driverId);
+        return new ApiResponse(data: result);
+    }
 }
