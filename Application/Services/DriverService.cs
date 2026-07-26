@@ -12,17 +12,23 @@ namespace Application.Services;
 public class DriverService : IDriverService
 {
     private readonly IDriverRepository _repository;
+    private readonly IBookingRepository _bookingRepository;
+    private readonly IUserRepository _userRepository;
     private readonly IContextService _context;
     private readonly IMapper _mapper;
 
     public DriverService(
         IDriverRepository repository,
+        IBookingRepository bookingRepository,
+        IUserRepository userRepository,
         IContextService context,
         IMapper mapper)
     {
-        _repository = repository;
-        _context    = context;
-        _mapper     = mapper;
+        _repository        = repository;
+        _bookingRepository = bookingRepository;
+        _userRepository    = userRepository;
+        _context           = context;
+        _mapper            = mapper;
     }
 
     public async Task SubmitDriverRequestAsync(DriverCreateRequest createRequest)
@@ -62,6 +68,22 @@ public class DriverService : IDriverService
         driver.UpdatedAt    = DateTime.UtcNow;
         driver.CreatedAt    = DateTime.SpecifyKind(driver.CreatedAt, DateTimeKind.Utc);
 
+        if (driver.User != null)
+        {
+            driver.User.Role = UserRole.DRIVER;
+            driver.User.UpdatedAt = DateTime.UtcNow;
+        }
+        else
+        {
+            var user = await _userRepository.GetUserByIdAsync((int)driver.UserId);
+            if (user != null)
+            {
+                user.Role = UserRole.DRIVER;
+                user.UpdatedAt = DateTime.UtcNow;
+                await _userRepository.UpdateUserAsync(user);
+            }
+        }
+
         await _repository.UpdateDriverAsync(driver);
     }
 
@@ -81,6 +103,26 @@ public class DriverService : IDriverService
 
         driver.UpdatedAt = DateTime.UtcNow;
         driver.CreatedAt = DateTime.SpecifyKind(driver.CreatedAt, DateTimeKind.Utc);
+
+        // Revert user role to CUSTOMER if deactivated
+        if (driver.DriverStatus == DriverStatus.DEACTIVATED)
+        {
+            if (driver.User != null)
+            {
+                driver.User.Role = UserRole.CUSTOMER;
+                driver.User.UpdatedAt = DateTime.UtcNow;
+            }
+            else
+            {
+                var user = await _userRepository.GetUserByIdAsync((int)driver.UserId);
+                if (user != null)
+                {
+                    user.Role = UserRole.CUSTOMER;
+                    user.UpdatedAt = DateTime.UtcNow;
+                    await _userRepository.UpdateUserAsync(user);
+                }
+            }
+        }
 
         await _repository.UpdateDriverAsync(driver);
     }
@@ -135,5 +177,65 @@ public class DriverService : IDriverService
             throw new NotFoundException($"Driver with id {driverId} not found.");
             
         return _mapper.Map<DriverResponse>(driver);
+    }
+
+    public async Task<IReadOnlyCollection<BookingReadResponse>> GetMyTripsAsync()
+    {
+        var user = await _context.GetUser();
+        var driver = await _repository.GetDriverByUserIdAsync(user.Id);
+        if (driver == null)
+            return new List<BookingReadResponse>();
+
+        var bookings = await _repository.GetDriverTripsAsync(driver.Id);
+        return _mapper.Map<IReadOnlyCollection<BookingReadResponse>>(bookings);
+    }
+
+    public async Task<DriverTripCancelResponse> CancelTripAssignmentAsync(int bookingId)
+    {
+        var user = await _context.GetUser();
+        var driver = await _repository.GetDriverByUserIdAsync(user.Id);
+        if (driver == null)
+            throw new NotFoundException("Driver profile not found for current user.");
+
+        var booking = await _bookingRepository.GetBookingById(bookingId);
+        if (booking == null)
+            throw new NotFoundException($"Booking with id {bookingId} not found.");
+
+        if (booking.DriverId != driver.Id)
+            throw new FailedOperationException("You are not assigned as the driver for this trip.");
+
+        if (booking.BookingStatus == BookingStatus.CANCELLED || booking.BookingStatus == BookingStatus.COMPLETED)
+            throw new FailedOperationException($"Cannot cancel driver assignment for a {booking.BookingStatus} trip.");
+
+        // Find available alternative drivers for the booking's time window
+        var availableDrivers = await _repository.GetAvailableDriversAsync(booking.PickupDatetime, booking.ReturnDatetime);
+        var candidate = availableDrivers.FirstOrDefault(d => d.Id != driver.Id);
+
+        if (candidate != null)
+        {
+            booking.DriverId = candidate.Id;
+            booking.UpdatedAt = DateTime.UtcNow;
+            await _bookingRepository.UpdateBooking(booking);
+
+            return new DriverTripCancelResponse
+            {
+                Reassigned = true,
+                NewDriverId = candidate.Id,
+                NewDriverName = candidate.User != null ? $"{candidate.User.FirstName} {candidate.User.LastName}" : $"Driver #{candidate.Id}",
+                Message = $"Trip assignment cancelled. Successfully reassigned trip to driver {(candidate.User != null ? candidate.User.FirstName + " " + candidate.User.LastName : "#" + candidate.Id)}."
+            };
+        }
+        else
+        {
+            booking.DriverId = null;
+            booking.UpdatedAt = DateTime.UtcNow;
+            await _bookingRepository.UpdateBooking(booking);
+
+            return new DriverTripCancelResponse
+            {
+                Reassigned = false,
+                Message = "Trip assignment cancelled. No alternative available driver was found at this time."
+            };
+        }
     }
 }

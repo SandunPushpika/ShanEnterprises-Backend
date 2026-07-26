@@ -5,8 +5,12 @@ public class BookingReadResponse
     public int Id { get; set; }
     public int CustomerId { get; set; }
     public string CustomerName { get; set; } = string.Empty;
+    public string? CustomerEmail { get; set; }
+    public string? CustomerPhone { get; set; }
     public int VehicleId { get; set; }
     public string VehicleModel { get; set; } = string.Empty;
+    public string? VehicleRegistrationNumber { get; set; }
+    public string? VehicleMainImageUrl { get; set; }
     public int? DriverId { get; set; }
     public string? DriverName { get; set; }
     public string BookingReference { get; set; } = string.Empty;

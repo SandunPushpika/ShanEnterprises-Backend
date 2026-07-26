@@ -95,4 +95,14 @@ public class DriverRepository(AppDbContext context) : IDriverRepository
             .OrderBy(d => d.User.FirstName)
             .ToListAsync();
     }
+
+    public async Task<IReadOnlyCollection<Booking>> GetDriverTripsAsync(int driverId)
+    {
+        return await context.Bookings
+            .Include(b => b.Customer)
+            .Include(b => b.Vehicle)
+            .Where(b => b.DriverId == driverId)
+            .OrderByDescending(b => b.PickupDatetime)
+            .ToListAsync();
+    }
 }

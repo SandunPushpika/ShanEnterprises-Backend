@@ -2,6 +2,7 @@ using Core.DTOs.Response;
 using Core.Enums;
 using Core.Helpers;
 using Infrastructure.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using ShanEnterprises.Attributes;
@@ -32,7 +33,7 @@ public class StorageController : ControllerBase
         });
     }
     
-    [CustomAuthorize(UserRole.ADMIN)]
+    [Authorize]
     [HttpPost("multiple")]
     public async Task<ActionResult<ApiResponse>> UploadBlobs(List<IFormFile> files, BlobType blobType)
     {

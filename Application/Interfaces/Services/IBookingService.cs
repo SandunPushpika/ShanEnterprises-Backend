@@ -14,4 +14,5 @@ public interface IBookingService
     Task<SearchResponse<BookingReadResponse>> GetAllBookingsForUser(BookingSearchRequest request);
     Task<bool> VerifyBooking(string sessionId);
     Task CompleteBooking(int bookingId);
+    Task AssignDriverToBooking(int bookingId, AssignDriverRequest request);
 }

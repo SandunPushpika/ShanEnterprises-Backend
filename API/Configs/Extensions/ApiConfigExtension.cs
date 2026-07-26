@@ -1,9 +1,16 @@
+using System.Text.Json.Serialization;
+
 namespace ShanEnterprises.Configs.Extensions;
 
 public static class ApiConfigExtension
 {
     public static void ConfigureControllers(this IMvcBuilder builder)
     {
+        builder.AddJsonOptions(options =>
+        {
+            options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+        });
+
         builder.ConfigureApiBehaviorOptions(options =>
         {
             options.InvalidModelStateResponseFactory = context =>

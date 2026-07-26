@@ -12,4 +12,6 @@ public interface IDriverService
     Task<DriverStatusResponse> GetMyDriverStatusAsync();
     Task<IReadOnlyCollection<DriverResponse>> GetAvailableDriversAsync(AvailableDriverRequest request);
     Task<DriverResponse> GetDriverByIdAsync(int driverId);
+    Task<IReadOnlyCollection<BookingReadResponse>> GetMyTripsAsync();
+    Task<DriverTripCancelResponse> CancelTripAssignmentAsync(int bookingId);
 }

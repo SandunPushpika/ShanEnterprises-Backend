@@ -74,4 +74,18 @@ public class DriverController : ControllerBase
         var result = await _driverService.GetDriverByIdAsync(driverId);
         return new ApiResponse(data: result);
     }
+
+    [HttpGet("my-trips")]
+    public async Task<ActionResult<ApiResponse>> GetMyTrips()
+    {
+        var result = await _driverService.GetMyTripsAsync();
+        return new ApiResponse(data: result);
+    }
+
+    [HttpPut("trips/{bookingId}/cancel")]
+    public async Task<ActionResult<ApiResponse>> CancelTripAssignment(int bookingId)
+    {
+        var result = await _driverService.CancelTripAssignmentAsync(bookingId);
+        return new ApiResponse(message: result.Message, data: result);
+    }
 }

@@ -20,6 +20,7 @@ public class BookingService : IBookingService
     private readonly IBookingRepository _repository;
     private readonly IVehicleRepository _vehicleRepository;
     private readonly IPaymentRepository _paymentRepository;
+    private readonly IDriverRepository _driverRepository;
     private readonly IMapper _mapper;
     private readonly IContextService _context;
     private readonly IPaymentService _paymentService;
@@ -35,6 +36,7 @@ public class BookingService : IBookingService
     public BookingService(
         IBookingRepository repository,
         IVehicleRepository vehicleRepository,
+        IDriverRepository driverRepository,
         IMapper mapper,
         IContextService context,
         IPaymentService paymentService,
@@ -44,15 +46,16 @@ public class BookingService : IBookingService
         IUserRepository userRepository
         )
     {
-        _repository = repository;
+        _repository        = repository;
         _vehicleRepository = vehicleRepository;
-        _mapper = mapper;
-        _context = context;
-        _paymentService = paymentService;
+        _driverRepository  = driverRepository;
+        _mapper            = mapper;
+        _context           = context;
+        _paymentService    = paymentService;
         _paymentRepository = paymentRepository;
-        _emailService = emailService;
-        _appSettings = options.Value;
-        _userRepository = userRepository;
+        _emailService      = emailService;
+        _appSettings       = options.Value;
+        _userRepository    = userRepository;
     }
 
     public async Task<string> AddBooking(BookingCreateRequest request)
@@ -275,6 +278,45 @@ public class BookingService : IBookingService
         };
         
         await _emailService.SendEmailAsync(_appSettings.MailSettings, emailRequest);
+    }
+
+    public async Task AssignDriverToBooking(int bookingId, AssignDriverRequest request)
+    {
+        var booking = await _repository.GetBookingById(bookingId);
+        if (booking == null)
+            throw new NotFoundException($"Booking with id {bookingId} not found");
+
+        if (request.DriverId.HasValue && request.DriverId.Value > 0)
+        {
+            var driver = await _driverRepository.GetDriverByIdAsync(request.DriverId.Value);
+            if (driver == null)
+                throw new NotFoundException($"Driver with id {request.DriverId.Value} not found");
+
+            if (driver.DriverStatus != DriverStatus.APPROVED)
+                throw new FailedOperationException($"Driver #{request.DriverId.Value} is not approved.");
+
+            booking.DriverId = driver.Id;
+            booking.WithDriver = true;
+
+            // Compute driver fee if not previously calculated (e.g. Rs 2500/day)
+            if (booking.DriverFee == 0 && booking.RentalDays.HasValue && booking.RentalDays.Value > 0)
+            {
+                booking.DriverFee = booking.RentalDays.Value * 2500m;
+                booking.TotalAmount = booking.BaseRentalCost + booking.DriverFee + booking.TaxAmount - booking.DiscountAmount;
+            }
+        }
+        else
+        {
+            booking.DriverId = null;
+            booking.WithDriver = false;
+        }
+
+        booking.CreatedAt = DateTime.SpecifyKind(booking.CreatedAt, DateTimeKind.Utc);
+        booking.UpdatedAt = DateTime.UtcNow;
+        booking.PickupDatetime = DateTime.SpecifyKind(booking.PickupDatetime, DateTimeKind.Utc);
+        booking.ReturnDatetime = DateTime.SpecifyKind(booking.ReturnDatetime, DateTimeKind.Utc);
+
+        await _repository.UpdateBooking(booking);
     }
 
     #region Private methods

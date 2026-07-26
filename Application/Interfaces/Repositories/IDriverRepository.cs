@@ -12,4 +12,5 @@ public interface IDriverRepository
     Task<bool> HasActiveRequestAsync(long userId);
     Task<(IReadOnlyCollection<Driver> Drivers, int Total)> GetDriversByStatusAsync(DriverSearchRequest request);
     Task<IReadOnlyCollection<Driver>> GetAvailableDriversAsync(DateTime pickupDatetime, DateTime returnDatetime);
+    Task<IReadOnlyCollection<Booking>> GetDriverTripsAsync(int driverId);
 }

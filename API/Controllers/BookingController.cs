@@ -65,4 +65,17 @@ public class BookingController : ControllerBase
         await _bookingService.CompleteBooking(bookingId);
         return new ApiResponse("Booking complete successfully!");
     }
+
+    [CustomAuthorize(UserRole.ADMIN)]
+    [HttpPut("{bookingId}/driver")]
+    public async Task<ActionResult<ApiResponse>> AssignDriverToBooking(
+        int bookingId,
+        [FromBody] AssignDriverRequest request)
+    {
+        await _bookingService.AssignDriverToBooking(bookingId, request);
+        var msg = request.DriverId.HasValue && request.DriverId.Value > 0
+            ? "Driver assigned to booking successfully!"
+            : "Driver removed from booking successfully!";
+        return new ApiResponse(msg);
+    }
 }
