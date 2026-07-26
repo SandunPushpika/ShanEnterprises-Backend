@@ -13,6 +13,7 @@ public class AppDbContext : DbContext
     public DbSet<VerificationCodes> VerificationCodes { get; set; }
     public DbSet<Booking> Bookings { get; set; }
     public DbSet<VehicleImages> VehicleImages { get; set; }
+    public DbSet<VehicleMaintenance> VehicleMaintenances { get; set; }
     public DbSet<Payments> Payments { get; set; }
     public DbSet<Review> Reviews { get; set; }
     public DbSet<Driver> Drivers { get; set; }
@@ -32,6 +33,8 @@ public class AppDbContext : DbContext
         modelBuilder.HasPostgresEnum<UserRole>("user_role");
         modelBuilder.HasPostgresEnum<UserStatus>("user_status");
         modelBuilder.HasPostgresEnum<BookingStatus>("booking_status");
+        modelBuilder.HasPostgresEnum<MaintenanceStatus>("maintenance_status");
+
         modelBuilder.HasPostgresEnum<PaymentStatus>("payment_status");
         modelBuilder.HasPostgresEnum<PaymentMethod>("payment_method");
         modelBuilder.HasPostgresEnum<DriverStatus>("driver_status");
@@ -52,6 +55,12 @@ public class AppDbContext : DbContext
             .WithMany()
             .HasForeignKey(b => b.VehicleId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<VehicleMaintenance>()
+            .HasOne(vm => vm.Vehicle)
+            .WithMany()
+            .HasForeignKey(vm => vm.VehicleId)
+            .OnDelete(DeleteBehavior.Cascade);
         
         modelBuilder.Entity<Review>()
             .HasOne(r => r.Booking)

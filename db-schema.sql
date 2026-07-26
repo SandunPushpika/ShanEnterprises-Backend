@@ -72,6 +72,12 @@ CREATE TYPE notification_type AS ENUM (
     'REMINDER'
 );
 
+CREATE TYPE maintenance_status AS ENUM (
+    'UNDER_MAINTENANCE',
+    'COMPLETED',
+    'DELETED'
+);
+
 -- USERS TABLE
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
@@ -188,6 +194,27 @@ CREATE TABLE vehicle_images (
     is_primary BOOLEAN DEFAULT FALSE,
 
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- VEHICLE SERVICE TABLE
+CREATE TABLE vehicle_service (
+    id SERIAL PRIMARY KEY,
+
+    vehicle_id INTEGER NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,
+
+    maintenance_start DATE NOT NULL,
+    maintenance_end DATE NOT NULL,
+
+    description TEXT NOT NULL,
+
+    cost DECIMAL(10,2) NOT NULL CHECK (cost >= 0),
+
+    status maintenance_status NOT NULL DEFAULT 'UNDER_MAINTENANCE',
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT valid_maintenance_dates CHECK (maintenance_end >= maintenance_start)
 );
 
 -- BOOKINGS TABLE
@@ -394,3 +421,7 @@ CREATE INDEX idx_reviews_driver ON reviews(driver_id);
 
 CREATE INDEX idx_notifications_user ON notifications(user_id);
 CREATE INDEX idx_notifications_read ON notifications(is_read);
+
+CREATE INDEX idx_vehicle_service_vehicle_id ON vehicle_service(vehicle_id);
+CREATE INDEX idx_vehicle_service_maintenance_start ON vehicle_service(maintenance_start);
+CREATE INDEX idx_vehicle_service_status ON vehicle_service(status);
