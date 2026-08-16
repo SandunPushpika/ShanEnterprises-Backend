@@ -5,11 +5,22 @@ using Microsoft.EntityFrameworkCore;
 using Core.DTOs.Request;
 using System.Linq;
 using Core.Enums;
+using Microsoft.AspNetCore.Http;
+using System.Security.Claims;
 
 namespace Application.Repositories;
 
-public class VehicleRepository(AppDbContext context) : IVehicleRepository
+public class VehicleRepository : IVehicleRepository
 {
+    private readonly AppDbContext context;
+    private readonly IHttpContextAccessor _httpContextAccessor;
+
+    public VehicleRepository(AppDbContext context, IHttpContextAccessor httpContextAccessor)
+    {
+        this.context = context;
+        _httpContextAccessor = httpContextAccessor;
+    }
+
     public async Task<int> AddVehicle(Vehicle vehicle)
     {
         var res = context.Vehicles.Add(vehicle);
@@ -71,7 +82,18 @@ public class VehicleRepository(AppDbContext context) : IVehicleRepository
         if(request.VehicleIds != null && request.VehicleIds.Any())
             query = query.Where(v => request.VehicleIds.Contains(v.Id));
         
-        query = query.Where(v => v.Status != VehicleStatus.UNAVAILABLE);
+        // Hide soft deleted vehicles from everyone
+        query = query.Where(v => !v.IsDeleted);
+        
+        // Hide UNAVAILABLE vehicles from customers but show to admin
+        var claims = _httpContextAccessor.HttpContext?.User;
+        var role = claims?.FindFirst(ClaimTypes.Role)?.Value ?? claims?.FindFirst("role")?.Value;
+        bool isAdmin = role == "ADMIN" || role == UserRole.ADMIN.ToString();
+
+        if (!isAdmin)
+        {
+            query = query.Where(v => v.Status != VehicleStatus.UNAVAILABLE);
+        }
         
         var total = await query.CountAsync();
         var pageNumber = request.PageNumber < 1 ? 1 : request.PageNumber;

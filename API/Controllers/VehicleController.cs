@@ -139,4 +139,13 @@ public class VehicleController:Controller
         await _reviewService.DeleteReview(reviewId);
         return new ApiResponse(data: "Review deleted");
     }
+
+    [CustomAuthorize(UserRole.ADMIN)]
+    [HttpPut("{id}/availability")]
+    public async Task<ActionResult<ApiResponse>> SetVehicleAvailability(int id, [FromBody] SetVehicleAvailabilityRequest request)
+    {
+        await _vehicleService.SetVehicleAvailability(id, request.MakeUnavailable);
+        var msg = request.MakeUnavailable ? "Vehicle marked as unavailable." : "Vehicle marked as available.";
+        return new ApiResponse(msg);
+    }
 }

@@ -78,4 +78,20 @@ public class BookingController : ControllerBase
             : "Driver removed from booking successfully!";
         return new ApiResponse(msg);
     }
+
+    [Authorize]
+    [HttpPut("{bookingId}/change-driver")]
+    public async Task<ActionResult<ApiResponse>> ChangeDriver(int bookingId, [FromBody] AssignDriverRequest request)
+    {
+        await _bookingService.ChangeBookingDriverAsync(bookingId, request.DriverId);
+        return new ApiResponse(request.DriverId.HasValue ? "Driver changed successfully!" : "Driver removed successfully!");
+    }
+
+    [CustomAuthorize(UserRole.ADMIN)]
+    [HttpPost("{bookingId}/auto-assign-driver")]
+    public async Task<ActionResult<ApiResponse>> AutoAssignDriver(int bookingId)
+    {
+        await _bookingService.AutoAssignDriverAsync(bookingId);
+        return new ApiResponse("Driver automatically assigned to booking!");
+    }
 }

@@ -9,6 +9,8 @@ public interface IBookingRepository
 {
     Task<Booking> AddBooking(Booking booking);
     Task<Booking?> GetBookingById(int id);
+    Task<bool> HasActiveBookingsForDriverAsync(int driverId, BookingStatus[] statuses);
+    Task<Booking?> GetBookingByIdForCustomerAsync(int bookingId, long customerId);
     Task UpdateBooking(Booking booking);
     Task<(IReadOnlyCollection<Booking> Bookings,int Total)>  GetAllBookings(BookingSearchRequest request);
     Task DeleteBooking(Booking booking);

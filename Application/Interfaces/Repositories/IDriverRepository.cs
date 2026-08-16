@@ -13,4 +13,6 @@ public interface IDriverRepository
     Task<(IReadOnlyCollection<Driver> Drivers, int Total)> GetDriversByStatusAsync(DriverSearchRequest request);
     Task<IReadOnlyCollection<Driver>> GetAvailableDriversAsync(DateTime pickupDatetime, DateTime returnDatetime);
     Task<IReadOnlyCollection<Booking>> GetDriverTripsAsync(int driverId);
+    Task<(IReadOnlyCollection<Booking> Trips, int Total)> GetDriverTripsPaginatedAsync(int driverId, int pageNumber, int pageSize);
+    Task AddDriverBookingCancellationAsync(DriverBookingCancellation cancellation);
 }

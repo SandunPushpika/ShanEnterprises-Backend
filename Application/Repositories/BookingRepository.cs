@@ -36,7 +36,22 @@ public class BookingRepository(AppDbContext context) : IBookingRepository
     {
         return await context.Bookings
             .Include(b => b.Vehicle)
+            .Include(b => b.Customer)
             .FirstOrDefaultAsync(b => b.Id == id);
+    }
+
+    public async Task<bool> HasActiveBookingsForDriverAsync(int driverId, BookingStatus[] statuses)
+    {
+        return await context.Bookings.AnyAsync(b =>
+            b.DriverId == driverId &&
+            statuses.Contains(b.BookingStatus));
+    }
+
+    public async Task<Booking?> GetBookingByIdForCustomerAsync(int bookingId, long customerId)
+    {
+        return await context.Bookings
+            .Include(b => b.Vehicle)
+            .FirstOrDefaultAsync(b => b.Id == bookingId && b.CustomerId == customerId);
     }
 
     public async Task UpdateBooking(Booking booking)

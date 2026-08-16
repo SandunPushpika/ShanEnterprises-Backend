@@ -10,6 +10,8 @@ public interface IBookingService
     Task<BookingReadResponse> GetBookingById(int id);
     Task<SearchResponse<BookingReadResponse>> GetAllBookings(BookingSearchRequest request);
     Task DeleteBooking(int id);
+    Task ChangeBookingDriverAsync(int bookingId, int? driverId);
+    Task AutoAssignDriverAsync(int bookingId);
     Task<IReadOnlyCollection<BookedDateRangeResponse>> GetBookedDatesByVehicleId(int vehicleId);
     Task<SearchResponse<BookingReadResponse>> GetAllBookingsForUser(BookingSearchRequest request);
     Task<bool> VerifyBooking(string sessionId);

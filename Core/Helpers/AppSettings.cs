@@ -12,6 +12,7 @@ public class AppSettings
     public StripeConfig StripeConfigs { get; set; }
     public string RecommendationServiceUrl { get; set; } 
     public string RecommendationServiceApiKey { get; set; } 
+    public string BookingsUrl { get; set; } = "";
 }
 
 public class JwtSettings

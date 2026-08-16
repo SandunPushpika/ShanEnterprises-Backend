@@ -12,6 +12,7 @@ public interface IDriverService
     Task<DriverStatusResponse> GetMyDriverStatusAsync();
     Task<IReadOnlyCollection<DriverResponse>> GetAvailableDriversAsync(AvailableDriverRequest request);
     Task<DriverResponse> GetDriverByIdAsync(int driverId);
-    Task<IReadOnlyCollection<BookingReadResponse>> GetMyTripsAsync();
+    Task<SearchResponse<BookingReadResponse>> GetMyTripsAsync(int pageNumber = 1, int pageSize = 10);
+    Task<SearchResponse<BookingReadResponse>> GetDriverTripsAsync(int driverId, int pageNumber = 1, int pageSize = 10);
     Task<DriverTripCancelResponse> CancelTripAssignmentAsync(int bookingId);
 }

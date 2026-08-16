@@ -76,9 +76,17 @@ public class DriverController : ControllerBase
     }
 
     [HttpGet("my-trips")]
-    public async Task<ActionResult<ApiResponse>> GetMyTrips()
+    public async Task<ActionResult<ApiResponse>> GetMyTrips([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
     {
-        var result = await _driverService.GetMyTripsAsync();
+        var result = await _driverService.GetMyTripsAsync(pageNumber, pageSize);
+        return new ApiResponse(data: result);
+    }
+
+    [CustomAuthorize(UserRole.ADMIN)]
+    [HttpGet("{driverId}/trips")]
+    public async Task<ActionResult<ApiResponse>> GetDriverTrips(int driverId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+    {
+        var result = await _driverService.GetDriverTripsAsync(driverId, pageNumber, pageSize);
         return new ApiResponse(data: result);
     }
 

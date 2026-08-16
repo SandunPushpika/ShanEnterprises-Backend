@@ -77,6 +77,8 @@ public class DriverRepository(AppDbContext context) : IDriverRepository
             BookingStatus.CONFIRMED,
             BookingStatus.ONGOING
         };
+        pickupDatetime = DateTime.SpecifyKind(pickupDatetime, DateTimeKind.Utc);
+        returnDatetime = DateTime.SpecifyKind(returnDatetime, DateTimeKind.Utc);
 
         var busyDriverIds = context.Bookings
             .Where(b =>
@@ -104,5 +106,26 @@ public class DriverRepository(AppDbContext context) : IDriverRepository
             .Where(b => b.DriverId == driverId)
             .OrderByDescending(b => b.PickupDatetime)
             .ToListAsync();
+    }
+
+    public async Task<(IReadOnlyCollection<Booking> Trips, int Total)> GetDriverTripsPaginatedAsync(int driverId, int pageNumber, int pageSize)
+    {
+        var query = context.Bookings
+            .Include(b => b.Customer)
+            .Include(b => b.Vehicle)
+            .Where(b => b.DriverId == driverId)
+            .OrderByDescending(b => b.PickupDatetime);
+        
+        var total = await query.CountAsync();
+        var pn = pageNumber < 1 ? 1 : pageNumber;
+        var ps = pageSize < 1 ? 10 : pageSize;
+        var trips = await query.Skip((pn - 1) * ps).Take(ps).ToListAsync();
+        return (trips, total);
+    }
+
+    public async Task AddDriverBookingCancellationAsync(DriverBookingCancellation cancellation)
+    {
+        await context.DriverBookingCancellations.AddAsync(cancellation);
+        await context.SaveChangesAsync();
     }
 }

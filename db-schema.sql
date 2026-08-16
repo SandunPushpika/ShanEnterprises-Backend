@@ -425,3 +425,50 @@ CREATE INDEX idx_notifications_read ON notifications(is_read);
 CREATE INDEX idx_vehicle_service_vehicle_id ON vehicle_service(vehicle_id);
 CREATE INDEX idx_vehicle_service_maintenance_start ON vehicle_service(maintenance_start);
 CREATE INDEX idx_vehicle_service_status ON vehicle_service(status);
+
+-- ============================================================
+-- NEW TABLES (added for feature completion)
+-- ============================================================
+
+-- DRIVER BOOKING CANCELLATION HISTORY
+CREATE TABLE driver_booking_cancellations (
+    id SERIAL PRIMARY KEY,
+
+    booking_id INTEGER NOT NULL REFERENCES bookings(id) ON DELETE RESTRICT,
+    driver_id INTEGER NOT NULL REFERENCES drivers(id) ON DELETE RESTRICT,
+
+    cancellation_reason TEXT,
+
+    cancelled_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_driver_cancellations_booking ON driver_booking_cancellations(booking_id);
+CREATE INDEX idx_driver_cancellations_driver ON driver_booking_cancellations(driver_id);
+CREATE INDEX idx_driver_cancellations_cancelled_at ON driver_booking_cancellations(cancelled_at);
+
+-- CONTACT REQUESTS TABLE
+CREATE TABLE contact_requests (
+    id SERIAL PRIMARY KEY,
+
+    user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+
+    name VARCHAR(200) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    subject VARCHAR(500) NOT NULL,
+    message TEXT NOT NULL,
+
+    status VARCHAR(50) NOT NULL DEFAULT 'NEW',
+    admin_notes TEXT,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_contact_requests_user ON contact_requests(user_id);
+CREATE INDEX idx_contact_requests_status ON contact_requests(status);
+CREATE INDEX idx_contact_requests_created_at ON contact_requests(created_at);
+
+-- ADD SOFT DELETE TO VEHICLES TABLE
+ALTER TABLE vehicles ADD COLUMN is_deleted BOOLEAN DEFAULT FALSE;
+CREATE INDEX idx_vehicles_is_deleted ON vehicles(is_deleted);

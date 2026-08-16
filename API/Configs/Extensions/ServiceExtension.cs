@@ -49,6 +49,8 @@ public static class ServiceExtension
         services.AddScoped<IBookingService, BookingService>();
         services.AddScoped<IReviewService, ReviewService>();
         services.AddScoped<IRecommendationService, RecommendationService>();
+        services.AddScoped<IDashboardService, DashboardService>();
+        services.AddScoped<IContactRequestService, ContactRequestService>();
         //Register all services here
     }
     
@@ -63,6 +65,8 @@ public static class ServiceExtension
         services.AddScoped<IDriverRepository, DriverRepository>();
         services.AddScoped<IBookingRepository, BookingRepository>();
         services.AddScoped<IReviewRepository, ReviewRepository>();
+        services.AddScoped<IDashboardRepository, DashboardRepository>();
+        services.AddScoped<IContactRequestRepository, ContactRequestRepository>();
         //Register all repositories here
     }
 

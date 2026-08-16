@@ -7,6 +7,11 @@ using Core.Entities;
 using Core.Enums;
 using Core.Exceptions;
 
+using Core.Helpers;
+using Core.Helpers.Templates;
+using Microsoft.Extensions.Options;
+using Infrastructure.Interfaces;
+
 namespace Application.Services;
 
 public class DriverService : IDriverService
@@ -16,19 +21,25 @@ public class DriverService : IDriverService
     private readonly IUserRepository _userRepository;
     private readonly IContextService _context;
     private readonly IMapper _mapper;
+    private readonly IEmailService _emailService;
+    private readonly AppSettings _appSettings;
 
     public DriverService(
         IDriverRepository repository,
         IBookingRepository bookingRepository,
         IUserRepository userRepository,
         IContextService context,
-        IMapper mapper)
+        IMapper mapper,
+        IEmailService emailService,
+        IOptions<AppSettings> appSettings)
     {
         _repository        = repository;
         _bookingRepository = bookingRepository;
         _userRepository    = userRepository;
         _context           = context;
         _mapper            = mapper;
+        _emailService      = emailService;
+        _appSettings       = appSettings.Value;
     }
 
     public async Task SubmitDriverRequestAsync(DriverCreateRequest createRequest)
@@ -92,6 +103,16 @@ public class DriverService : IDriverService
         var driver = await _repository.GetDriverByIdAsync(driverId);
         if (driver == null)
             throw new NotFoundException($"Driver with id {driverId} not found.");
+
+        if (driver.DriverStatus == DriverStatus.APPROVED)
+        {
+            // Check for active/pending bookings
+            var blockingStatuses = new[] { BookingStatus.PENDING, BookingStatus.CONFIRMED, BookingStatus.ONGOING };
+            var hasBlockingBookings = await _bookingRepository.HasActiveBookingsForDriverAsync(driver.Id, blockingStatuses);
+            if (hasBlockingBookings)
+                throw new FailedOperationException(
+                    "This driver has active or pending bookings and cannot be deactivated. Please cancel or reassign those bookings first.");
+        }
 
         if (driver.DriverStatus == DriverStatus.DEACTIVATED)
             throw new FailedOperationException("Driver is already deactivated.");
@@ -179,15 +200,26 @@ public class DriverService : IDriverService
         return _mapper.Map<DriverResponse>(driver);
     }
 
-    public async Task<IReadOnlyCollection<BookingReadResponse>> GetMyTripsAsync()
+    public async Task<SearchResponse<BookingReadResponse>> GetMyTripsAsync(int pageNumber = 1, int pageSize = 10)
     {
         var user = await _context.GetUser();
         var driver = await _repository.GetDriverByUserIdAsync(user.Id);
         if (driver == null)
-            return new List<BookingReadResponse>();
+            return new SearchResponse<BookingReadResponse> { Data = new List<BookingReadResponse>(), Total = 0, PageNumber = pageNumber, PageSize = pageSize };
 
-        var bookings = await _repository.GetDriverTripsAsync(driver.Id);
-        return _mapper.Map<IReadOnlyCollection<BookingReadResponse>>(bookings);
+        var (trips, total) = await _repository.GetDriverTripsPaginatedAsync(driver.Id, pageNumber, pageSize);
+        var responses = _mapper.Map<IReadOnlyCollection<BookingReadResponse>>(trips);
+        return new SearchResponse<BookingReadResponse> { Data = responses, Total = total, PageNumber = pageNumber, PageSize = pageSize };
+    }
+
+    public async Task<SearchResponse<BookingReadResponse>> GetDriverTripsAsync(int driverId, int pageNumber = 1, int pageSize = 10)
+    {
+        var driver = await _repository.GetDriverByIdAsync(driverId);
+        if (driver == null)
+            throw new NotFoundException($"Driver with id {driverId} not found.");
+        var (trips, total) = await _repository.GetDriverTripsPaginatedAsync(driverId, pageNumber, pageSize);
+        var responses = _mapper.Map<IReadOnlyCollection<BookingReadResponse>>(trips);
+        return new SearchResponse<BookingReadResponse> { Data = responses, Total = total, PageNumber = pageNumber, PageSize = pageSize };
     }
 
     public async Task<DriverTripCancelResponse> CancelTripAssignmentAsync(int bookingId)
@@ -207,6 +239,16 @@ public class DriverService : IDriverService
         if (booking.BookingStatus == BookingStatus.CANCELLED || booking.BookingStatus == BookingStatus.COMPLETED)
             throw new FailedOperationException($"Cannot cancel driver assignment for a {booking.BookingStatus} trip.");
 
+        // Record cancellation
+        var cancellation = new DriverBookingCancellation
+        {
+            BookingId = booking.Id,
+            DriverId = driver.Id,
+            CancelledAt = DateTime.UtcNow,
+            CreatedAt = DateTime.UtcNow
+        };
+        await _repository.AddDriverBookingCancellationAsync(cancellation);
+
         // Find available alternative drivers for the booking's time window
         var availableDrivers = await _repository.GetAvailableDriversAsync(booking.PickupDatetime, booking.ReturnDatetime);
         var candidate = availableDrivers.FirstOrDefault(d => d.Id != driver.Id);
@@ -214,9 +256,47 @@ public class DriverService : IDriverService
         if (candidate != null)
         {
             booking.DriverId = candidate.Id;
-            booking.UpdatedAt = DateTime.UtcNow;
-            await _bookingRepository.UpdateBooking(booking);
+        }
+        else
+        {
+            booking.DriverId = null;
+        }
 
+        booking.UpdatedAt = DateTime.UtcNow;
+        booking.PickupDatetime = DateTime.SpecifyKind(booking.PickupDatetime, DateTimeKind.Utc);
+        booking.ReturnDatetime = DateTime.SpecifyKind(booking.ReturnDatetime, DateTimeKind.Utc);
+        booking.CreatedAt = DateTime.SpecifyKind(booking.CreatedAt, DateTimeKind.Utc);
+        
+        await _bookingRepository.UpdateBooking(booking);
+
+        // Send email
+        try
+        {
+            var customer = await _userRepository.GetUserByIdAsync((int)booking.CustomerId);
+            if (customer != null)
+            {
+                var bookingsUrl = string.IsNullOrWhiteSpace(_appSettings.BookingsUrl) ? "your bookings page" : _appSettings.BookingsUrl;
+                var emailHtml = BookingEmailTemplates.GenerateDriverCancellationEmail(
+                    customer.FirstName,
+                    booking.BookingReference,
+                    booking.Vehicle?.Model ?? "your reserved vehicle",
+                    booking.PickupDatetime.ToString("MMM dd, yyyy HH:mm"),
+                    booking.ReturnDatetime.ToString("MMM dd, yyyy HH:mm"),
+                    bookingsUrl);
+                
+                await _emailService.SendEmailAsync(_appSettings.MailSettings, new Core.DTOs.Request.Other.EmailSendRequest
+                {
+                    To = customer.Email,
+                    Subject = "Important: Driver Update for Your Booking",
+                    Body = emailHtml,
+                    IsBodyHtml = true
+                });
+            }
+        }
+        catch { }
+
+        if (candidate != null)
+        {
             return new DriverTripCancelResponse
             {
                 Reassigned = true,
@@ -227,10 +307,6 @@ public class DriverService : IDriverService
         }
         else
         {
-            booking.DriverId = null;
-            booking.UpdatedAt = DateTime.UtcNow;
-            await _bookingRepository.UpdateBooking(booking);
-
             return new DriverTripCancelResponse
             {
                 Reassigned = false,

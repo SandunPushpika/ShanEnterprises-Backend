@@ -319,6 +319,73 @@ public class BookingService : IBookingService
         await _repository.UpdateBooking(booking);
     }
 
+    public async Task ChangeBookingDriverAsync(int bookingId, int? driverId)
+    {
+        var user = await _context.GetUser();
+        if (user == null) throw new UnauthorizedAccessException();
+        
+        var booking = await _repository.GetBookingByIdForCustomerAsync(bookingId, user.Id);
+        if (booking == null) throw new NotFoundException($"Booking {bookingId} not found.");
+        
+        // Only allow for PENDING or CONFIRMED bookings
+        if (booking.BookingStatus != BookingStatus.PENDING && booking.BookingStatus != BookingStatus.CONFIRMED)
+            throw new FailedOperationException($"Cannot change driver for a {booking.BookingStatus} booking.");
+        
+        if (driverId.HasValue && driverId.Value > 0)
+        {
+            var driver = await _driverRepository.GetDriverByIdAsync(driverId.Value);
+            if (driver == null) throw new NotFoundException($"Driver {driverId} not found.");
+            if (driver.DriverStatus != DriverStatus.APPROVED)
+                throw new FailedOperationException($"Driver #{driverId} is not approved.");
+            
+            // Check driver availability for the booking period
+            var availableDrivers = await _driverRepository.GetAvailableDriversAsync(booking.PickupDatetime, booking.ReturnDatetime);
+            bool isAvailable = availableDrivers.Any(d => d.Id == driverId.Value) || booking.DriverId == driverId.Value;
+            if (!isAvailable)
+                throw new FailedOperationException($"Driver #{driverId} is not available for this booking period.");
+            
+            booking.DriverId = driverId.Value;
+            booking.WithDriver = true;
+        }
+        else
+        {
+            booking.DriverId = null;
+            booking.WithDriver = false;
+        }
+        
+        booking.UpdatedAt = DateTime.UtcNow;
+        booking.CreatedAt = DateTime.SpecifyKind(booking.CreatedAt, DateTimeKind.Utc);
+        booking.PickupDatetime = DateTime.SpecifyKind(booking.PickupDatetime, DateTimeKind.Utc);
+        booking.ReturnDatetime = DateTime.SpecifyKind(booking.ReturnDatetime, DateTimeKind.Utc);
+        await _repository.UpdateBooking(booking);
+    }
+
+    public async Task AutoAssignDriverAsync(int bookingId)
+    {
+        var booking = await _repository.GetBookingById(bookingId);
+        if (booking == null) throw new NotFoundException($"Booking {bookingId} not found.");
+        
+        if (booking.DriverId.HasValue)
+            throw new FailedOperationException("Booking already has a driver assigned.");
+        
+        if (!booking.WithDriver)
+            throw new FailedOperationException("This booking does not require a driver.");
+        
+        booking.PickupDatetime = DateTime.SpecifyKind(booking.PickupDatetime, DateTimeKind.Utc);
+        booking.ReturnDatetime = DateTime.SpecifyKind(booking.ReturnDatetime, DateTimeKind.Utc);
+        
+        var availableDrivers = await _driverRepository.GetAvailableDriversAsync(booking.PickupDatetime, booking.ReturnDatetime);
+        var candidate = availableDrivers.FirstOrDefault();
+        
+        if (candidate == null)
+            throw new FailedOperationException("No available drivers found for this booking period.");
+        
+        booking.DriverId = candidate.Id;
+        booking.CreatedAt = DateTime.SpecifyKind(booking.CreatedAt, DateTimeKind.Utc);
+        booking.UpdatedAt = DateTime.UtcNow;
+        await _repository.UpdateBooking(booking);
+    }
+
     #region Private methods
     
     private async Task<ExternalPaymentResponse> GenerateCheckoutSession(Booking booking)

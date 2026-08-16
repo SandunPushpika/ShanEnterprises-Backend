@@ -14,4 +14,5 @@ public interface IVehicleService
     Task DeleteVehicle(int id);
     Task<List<VehicleImages>> GetVehicleImagesByVehicleIdAsync(int vehicleId);
     Task<VehicleResponse> GetVehicleById(int vehicleId);
+    Task SetVehicleAvailability(int id, bool makeUnavailable);
 }

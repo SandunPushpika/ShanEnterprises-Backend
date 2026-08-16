@@ -17,6 +17,8 @@ public class AppDbContext : DbContext
     public DbSet<Payments> Payments { get; set; }
     public DbSet<Review> Reviews { get; set; }
     public DbSet<Driver> Drivers { get; set; }
+    public DbSet<DriverBookingCancellation> DriverBookingCancellations { get; set; }
+    public DbSet<ContactRequest> ContactRequests { get; set; }
     
     public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options)
@@ -119,5 +121,23 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Driver>()
             .HasIndex(d => d.LicenseNumber)
             .IsUnique();
+
+        modelBuilder.Entity<DriverBookingCancellation>()
+            .HasOne(d => d.Booking)
+            .WithMany(b => b.DriverCancellations)
+            .HasForeignKey(d => d.BookingId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<DriverBookingCancellation>()
+            .HasOne(d => d.Driver)
+            .WithMany()
+            .HasForeignKey(d => d.DriverId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<ContactRequest>()
+            .HasOne(c => c.User)
+            .WithMany()
+            .HasForeignKey(c => c.UserId)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 }

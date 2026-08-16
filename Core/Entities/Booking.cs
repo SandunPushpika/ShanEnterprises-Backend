@@ -62,4 +62,6 @@ public class Booking
 
     public virtual User Customer { get; set; } = null!;
     public virtual Vehicle Vehicle { get; set; } = null!;
+    public virtual Driver? Driver { get; set; }
+    public virtual ICollection<DriverBookingCancellation> DriverCancellations { get; set; } = new List<DriverBookingCancellation>();
 }

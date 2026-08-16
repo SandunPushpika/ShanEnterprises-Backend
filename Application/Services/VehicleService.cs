@@ -103,10 +103,10 @@ public class VehicleService : IVehicleService
     public async Task DeleteVehicle(int id)
     {
         var vehicle = await _repository.GetVehicleById(id);
-        if(vehicle == null || vehicle.Status == VehicleStatus.UNAVAILABLE)
+        if(vehicle == null || vehicle.IsDeleted)
             throw new NotFoundException($"Vehicle with id {id} not found");
 
-        vehicle.Status = VehicleStatus.UNAVAILABLE;
+        vehicle.IsDeleted = true;
         vehicle.UpdatedAt = DateTime.UtcNow;
         vehicle.CreatedAt = DateTime.SpecifyKind(vehicle.CreatedAt, DateTimeKind.Utc);
         
@@ -122,6 +122,30 @@ public class VehicleService : IVehicleService
     {
         var vehicle = await _repository.GetVehicleById(vehicleId, true, true, true);
         return _mapper.Map<VehicleResponse>(vehicle);
+    }
+
+    public async Task SetVehicleAvailability(int id, bool makeUnavailable)
+    {
+        var vehicle = await _repository.GetVehicleById(id);
+        if (vehicle == null)
+            throw new NotFoundException($"Vehicle with id {id} not found");
+        
+        if (makeUnavailable)
+        {
+            if (vehicle.Status == VehicleStatus.UNAVAILABLE)
+                throw new FailedOperationException("Vehicle is already unavailable.");
+            vehicle.Status = VehicleStatus.UNAVAILABLE;
+        }
+        else
+        {
+            if (vehicle.Status != VehicleStatus.UNAVAILABLE)
+                throw new FailedOperationException("Vehicle is already available.");
+            vehicle.Status = VehicleStatus.AVAILABLE;
+        }
+        
+        vehicle.UpdatedAt = DateTime.UtcNow;
+        vehicle.CreatedAt = DateTime.SpecifyKind(vehicle.CreatedAt, DateTimeKind.Utc);
+        await _repository.UpdateVehicle(vehicle);
     }
     
     #region private methods
