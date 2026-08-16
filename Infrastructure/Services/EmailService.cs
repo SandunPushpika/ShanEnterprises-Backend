@@ -24,8 +24,9 @@ public class EmailService : IEmailService
         };
 
         using var client = new SmtpClient();
-        
-        await client.ConnectAsync("smtp.gmail.com", settings.Port, MailKit.Security.SecureSocketOptions.StartTls);
+
+        client.CheckCertificateRevocation = false;
+        await client.ConnectAsync("smtp.gmail.com", settings.Port, MailKit.Security.SecureSocketOptions.StartTlsWhenAvailable);
         await client.AuthenticateAsync(settings.SenderEmail, settings.Password);
     
         await client.SendAsync(mimeMessage);
