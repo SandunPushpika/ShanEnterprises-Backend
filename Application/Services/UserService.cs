@@ -5,6 +5,7 @@ using Core.DTOs.Request.Auth;
 using Core.DTOs.Response;
 using Core.Entities;
 using Core.Enums;
+using Core.DTOs.Request.Customer;
 
 namespace Application.Services;
 
@@ -47,6 +48,29 @@ public class UserService : IUserService
 
         var updatedUser = await _userRepository.UpdateUserAsync(user);
 
+        return _mapper.Map<UserResponse>(user);
+    }
+    
+    public async Task<SearchResponse<UserResponse>> GetCustomersAsync(CustomerSearchRequest request)
+    {
+        var (users, total) = await _userRepository.GetCustomersAsync(request);
+        return new SearchResponse<UserResponse>
+        {
+            Data = _mapper.Map<List<UserResponse>>(users),
+            Total = total,
+            PageNumber = request.PageNumber,
+            PageSize = request.PageSize
+        };
+    }
+    public async Task<UserResponse> UpdateUserStatusAsync(long userId, UserStatus status)
+    {
+        var user = await _userRepository.GetUserByIdAsync((int)userId);
+        if (user == null)
+            throw new Exception("Customer not found");
+        user.Status = status;
+        user.UpdatedAt = DateTime.UtcNow;
+        user.CreatedAt = DateTime.SpecifyKind(user.CreatedAt, DateTimeKind.Utc);
+        await _userRepository.UpdateUserAsync(user);
         return _mapper.Map<UserResponse>(user);
     }
 

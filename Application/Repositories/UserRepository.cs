@@ -1,6 +1,8 @@
 using Application.Interfaces.Repositories;
 using Core.DTOs.Response;
+using Core.DTOs.Request.Customer;
 using Core.Entities;
+using Core.Enums;
 using Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
 
@@ -32,4 +34,31 @@ public class UserRepository(AppDbContext context) : IUserRepository
 
         return user;
     }
+    public async Task<(IReadOnlyCollection<User> Users, int Total)> GetCustomersAsync(CustomerSearchRequest request)
+    {
+        var query = context.Users.Where(x => x.Role == UserRole.CUSTOMER);
+        if (request.Status.HasValue)
+        {
+            query = query.Where(x => x.Status == request.Status.Value);
+        }
+        
+        if (!string.IsNullOrWhiteSpace(request.SearchTerm))
+        {
+            var term = request.SearchTerm.Trim().ToLower();
+            query = query.Where(x =>
+                x.FirstName.ToLower().Contains(term) ||
+                x.LastName.ToLower().Contains(term) ||
+                x.Email.ToLower().Contains(term) ||
+                (x.PhoneNumber != null && x.PhoneNumber.Contains(term)) ||
+                (x.NicPassportNumber != null && x.NicPassportNumber.ToLower().Contains(term)));
+        }
+        var total = await query.CountAsync();
+        var users = await query
+            .OrderByDescending(x => x.CreatedAt)
+            .Skip((request.PageNumber - 1) * request.PageSize)
+            .Take(request.PageSize)
+            .ToListAsync();
+        return (users, total);
+    }
 }
+    

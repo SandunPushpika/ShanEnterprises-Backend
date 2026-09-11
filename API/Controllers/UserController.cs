@@ -3,6 +3,9 @@ using Core.DTOs.Request.Auth;
 using Core.DTOs.Response;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Core.Enums;
+using Core.DTOs.Request.Customer;
+using ShanEnterprises.Attributes;
 
 namespace ShanEnterprises.Controllers;
 
@@ -35,5 +38,21 @@ public class UserController : ControllerBase
         var updatedUser = await _userService.UpdateUserAsync(request);
 
         return new ApiResponse("User updated successfully", data: updatedUser);
+    }
+    
+    [CustomAuthorize(UserRole.ADMIN)]
+    [HttpPost("customers/search")]
+    public async Task<ActionResult<ApiResponse>> GetCustomers([FromBody] CustomerSearchRequest request)
+    {
+        var result = await _userService.GetCustomersAsync(request);
+        return new ApiResponse(data: result);
+    }
+    
+    [CustomAuthorize(UserRole.ADMIN)]
+    [HttpPut("{userId}/status")]
+    public async Task<ActionResult<ApiResponse>> UpdateCustomerStatus(long userId, [FromBody] CustomerStatusUpdateRequest request)
+    {
+        var updated = await _userService.UpdateUserStatusAsync(userId, request.Status);
+        return new ApiResponse("Customer status updated successfully", data: updated);
     }
 }
