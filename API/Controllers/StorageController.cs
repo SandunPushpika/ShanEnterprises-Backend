@@ -34,6 +34,15 @@ public class StorageController : ControllerBase
     }
     
     [Authorize]
+    [HttpPost("upload")]
+    public async Task<ActionResult<ApiResponse>> UploadSingleBlob(IFormFile file, BlobType blobType = BlobType.PROFILE)
+    {
+        var fileName = DateTime.Now.ToString("yyyyMMddHHmmssfff") + file.FileName;
+        var res = await _storageService.UploadBlobAsync(file, blobType, connectionString: _appSettings.BlobConnectionString, fileName: fileName);
+        return new ApiResponse(data: new { url = res });
+    }
+
+    [Authorize]
     [HttpPost("multiple")]
     public async Task<ActionResult<ApiResponse>> UploadBlobs(List<IFormFile> files, BlobType blobType)
     {
