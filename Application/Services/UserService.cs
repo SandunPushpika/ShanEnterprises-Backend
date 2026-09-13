@@ -154,7 +154,7 @@ public class UserService : IUserService
 
         var updatedUser = await _userRepository.UpdateUserAsync(user);
 
-        return _mapper.Map<UserResponse>(user);
+        return _mapper.Map<UserResponse>(updatedUser);
     }
     
     public async Task<SearchResponse<UserResponse>> GetCustomersAsync(CustomerSearchRequest request)
