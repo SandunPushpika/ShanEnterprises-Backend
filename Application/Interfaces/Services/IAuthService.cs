@@ -13,4 +13,6 @@ public interface IAuthService
     Task ResendVerificationCode(string email);
     string GetOAuthUrl();
     Task<LoginResponse> LoginViaSocialMedia(string code);
+    Task ForgotPassword(ForgotPasswordRequest request);
+    Task ResetPassword(ResetPasswordRequest request);
 }

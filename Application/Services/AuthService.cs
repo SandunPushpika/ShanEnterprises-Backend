@@ -189,5 +189,55 @@ public class AuthService : IAuthService
         await _verificationCodeRepository.AddVerificationCode(verificationCode);
     }
     
+    public async Task ForgotPassword(ForgotPasswordRequest request)
+    {
+        var existingUser = await _userRepository.GetUserByEmailAsync(request.Email.ToLower());
+        if (existingUser == null)
+            throw new NotFoundException("User not found with this email");
+
+        var verificationCode = new VerificationCodes
+        {
+            UserId = (int)existingUser.Id,
+            ExpiresAt = DateTime.UtcNow.AddMinutes(10),
+            VerificationCode = new Random().Next(1000000, 10000000).ToString(),
+            IsUsed = false
+        };
+
+        await _verificationCodeRepository.AddVerificationCode(verificationCode);
+
+        await _emailService.SendEmailAsync(_appSettings.MailSettings, new EmailSendRequest
+        {
+            IsBodyHtml = true,
+            To = existingUser.Email,
+            Subject = Constants.ForgotPasswordEmailSubject,
+            Body = ForgotPasswordEmailTemplate.Generate(existingUser.FirstName, verificationCode.VerificationCode)
+        });
+    }
+
+    public async Task ResetPassword(ResetPasswordRequest request)
+    {
+        var existingUser = await _userRepository.GetUserByEmailAsync(request.Email.ToLower());
+        if (existingUser == null)
+            throw new NotFoundException("User not found");
+
+        var verificationCode = await _verificationCodeRepository.GetVerificationCodeByCode(request.Code);
+        if (verificationCode == null || verificationCode.UserId != existingUser.Id)
+            throw new VerificationCodeException("Invalid verification code");
+
+        if (verificationCode.IsUsed || verificationCode.ExpiresAt < DateTime.UtcNow)
+            throw new VerificationCodeException("Verification code has expired or has already been used");
+
+        // Hash and update password
+        existingUser.PasswordHash = PasswordHasher.HashPassword(request.NewPassword);
+        existingUser.UpdatedAt = DateTime.UtcNow;
+        existingUser.CreatedAt = DateTime.SpecifyKind(existingUser.CreatedAt, DateTimeKind.Utc);
+        await _userRepository.UpdateUserAsync(existingUser);
+
+        // Mark code as used
+        verificationCode.IsUsed = true;
+        verificationCode.ExpiresAt = DateTime.SpecifyKind(verificationCode.ExpiresAt, DateTimeKind.Utc);
+        await _verificationCodeRepository.UpdateVerificationCode(verificationCode);
+    }
+
     #endregion
 }

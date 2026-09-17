@@ -63,4 +63,18 @@ public class AuthController(IAuthService authService) : Controller
         var resposne = await authService.LoginViaSocialMedia(code);
         return new ApiResponse("Successfully logged user", data: resposne);
     }
+    
+    [HttpPost("forgot-password")]
+    public async Task<ActionResult<ApiResponse>> ForgotPassword([FromBody] ForgotPasswordRequest request)
+    {
+        await authService.ForgotPassword(request);
+        return new ApiResponse("Password reset code sent to your email.");
+    }
+
+    [HttpPost("reset-password")]
+    public async Task<ActionResult<ApiResponse>> ResetPassword([FromBody] ResetPasswordRequest request)
+    {
+        await authService.ResetPassword(request);
+        return new ApiResponse("Password has been reset successfully. You can now login.");
+    }
 }
