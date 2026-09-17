@@ -26,4 +26,12 @@ public class DashboardController : ControllerBase
         var result = await _dashboardService.GetDashboardStatsAsync();
         return new ApiResponse(data: result);
     }
+    
+    [AllowAnonymous]
+    [HttpGet("public-stats")]
+    public async Task<ActionResult<ApiResponse>> GetPublicStats()
+    {
+        var result = await _dashboardService.GetPublicStatsAsync();
+        return new ApiResponse(data: result);
+    }
 }
