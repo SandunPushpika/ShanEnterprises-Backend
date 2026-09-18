@@ -18,7 +18,7 @@ public class RecommendationService : IRecommendationService
     
     private readonly string _recommendationBaseUrl;
     private readonly string _recommendationApiKey;
-    private readonly int _cacheDurationInMinutes = 10;
+    private readonly int _cacheDurationInMinutes = 30;
     
     public RecommendationService(
         ILogger<RecommendationService> logger,
@@ -36,6 +36,7 @@ public class RecommendationService : IRecommendationService
         
         _httpClient.BaseAddress = new Uri(_recommendationBaseUrl);
         _httpClient.DefaultRequestHeaders.Add("X-API-Key", _recommendationApiKey);
+        _httpClient.Timeout = TimeSpan.FromMinutes(1);
     }
     
     public async Task UpdateReview(int vehicleId)
