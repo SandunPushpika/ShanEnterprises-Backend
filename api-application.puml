@@ -1,0 +1,134 @@
+@startuml ShanEnterprises_API_Application
+
+!pragma layout smetana
+
+skinparam dpi 200
+skinparam shadowing false
+skinparam packageStyle rectangle
+skinparam classAttributeIconSize 0
+skinparam roundCorner 8
+skinparam linetype ortho
+skinparam nodesep 40
+skinparam ranksep 50
+
+skinparam defaultFontName "Helvetica"
+skinparam defaultFontSize 11
+
+skinparam package {
+    BorderColor #374151
+    BorderThickness 1.5
+    FontColor #111827
+    FontStyle bold
+}
+
+skinparam class {
+    BorderColor #4B5563
+    HeaderBackgroundColor #F3F4F6
+    ArrowColor #2563EB
+    ArrowThickness 1.2
+}
+
+' ========================================================
+' API LAYER
+' ========================================================
+
+package "API Layer" as API #EFF6FF {
+
+    class AuthController <<Controller>> #DBEAFE
+    class BookingController <<Controller>> #DBEAFE
+    class ContactController <<Controller>> #DBEAFE
+    class DashboardController <<Controller>> #DBEAFE
+    class DriverController <<Controller>> #DBEAFE
+    class HealthController <<Controller>> #DBEAFE
+    class StorageController <<Controller>> #DBEAFE
+    class TestController <<Controller>> #DBEAFE
+    class UserController <<Controller>> #DBEAFE
+    class VehicleController <<Controller>> #DBEAFE
+    class VehicleMaintenanceController <<Controller>> #DBEAFE
+
+    class CustomAuthorizeAttribute
+    class ExceptionMiddleware
+}
+
+
+' ========================================================
+' APPLICATION - SERVICE INTERFACES
+' ========================================================
+
+package "Application Layer" as APP #F0FDF4 {
+
+    package "Service Interfaces" as SERVICE_INTERFACES #DCFCE7 {
+
+        interface IAuthService <<Interface>>
+        interface IBookingService <<Interface>>
+        interface IContactRequestService <<Interface>>
+        interface IContextService <<Interface>>
+        interface IDashboardService <<Interface>>
+        interface IDriverService <<Interface>>
+        interface IReviewService <<Interface>>
+        interface IUserService <<Interface>>
+        interface IVehicleMaintenanceService <<Interface>>
+        interface IVehicleService <<Interface>>
+    }
+
+
+    package "Service Implementations" as SERVICE_IMPL #DCFCE7 {
+
+        class AuthService <<Service>>
+        class BookingService <<Service>>
+        class ContactRequestService <<Service>>
+        class ContextService <<Service>>
+        class DashboardService <<Service>>
+        class DriverService <<Service>>
+        class ReviewService <<Service>>
+        class UserService <<Service>>
+        class VehicleMaintenanceService <<Service>>
+        class VehicleService <<Service>>
+    }
+}
+
+
+' ========================================================
+' CONTROLLER -> SERVICE
+' ========================================================
+
+AuthController ..> IAuthService : uses
+
+BookingController ..> IBookingService : uses
+
+ContactController ..> IContactRequestService : uses
+
+DashboardController ..> IDashboardService : uses
+
+DriverController ..> IDriverService : uses
+
+StorageController ..> IContextService : uses
+
+TestController ..> IContextService : uses
+
+UserController ..> IUserService : uses
+
+VehicleController ..> IVehicleService : uses
+VehicleController ..> IBookingService : uses
+VehicleController ..> IReviewService : uses
+
+VehicleMaintenanceController ..> IVehicleMaintenanceService : uses
+
+
+' ========================================================
+' INTERFACE REALIZATIONS
+' ========================================================
+
+IAuthService <|.. AuthService
+IBookingService <|.. BookingService
+IContactRequestService <|.. ContactRequestService
+IContextService <|.. ContextService
+IDashboardService <|.. DashboardService
+IDriverService <|.. DriverService
+IReviewService <|.. ReviewService
+IUserService <|.. UserService
+IVehicleMaintenanceService <|.. VehicleMaintenanceService
+IVehicleService <|.. VehicleService
+
+
+@enduml

@@ -1,0 +1,402 @@
+@startuml ShanEnterprises_Domain
+
+!pragma layout smetana
+
+skinparam dpi 250
+skinparam shadowing false
+skinparam packageStyle rectangle
+skinparam classAttributeIconSize 0
+skinparam roundCorner 8
+skinparam linetype ortho
+skinparam nodesep 50
+skinparam ranksep 60
+
+skinparam defaultFontName "Helvetica"
+skinparam defaultFontSize 11
+
+skinparam package {
+    BorderColor #374151
+    BorderThickness 1.5
+    FontColor #111827
+    FontStyle bold
+}
+
+skinparam class {
+    BorderColor #4B5563
+    HeaderBackgroundColor #F3F4F6
+    ArrowColor #2563EB
+    ArrowThickness 1.2
+}
+
+
+' ========================================================
+' ENTITIES
+' ========================================================
+
+package "Domain Entities" as ENTITIES #FCE7F3 {
+
+    class User <<Entity>> #FDF4FF {
+        +Id : long
+        +FirstName : string
+        +LastName : string
+        +Email : string
+        +PhoneNumber : string?
+        +PasswordHash : string
+        +Role : UserRole
+        +Status : UserStatus
+        +ProfileImageUrl : string?
+        +Address : string?
+        +City : string?
+        +NicPassportNumber : string?
+        +EmailVerified : bool
+        +CreatedAt : DateTime
+        +UpdatedAt : DateTime
+    }
+
+
+    class Driver <<Entity>> #FDF4FF {
+        +Id : int
+        +UserId : long
+        +LicenseNumber : string
+        +LicenseExpiryDate : DateOnly
+        +YearsOfExperience : int
+        +DriverStatus : DriverStatus
+        +Availability : AvailabilityStatus
+        +LicenseDocumentUrl : string?
+        +AverageRating : decimal
+        +CompletedRides : int
+        +ApprovedBy : long?
+        +ApprovedAt : DateTime?
+        +CreatedAt : DateTime
+        +UpdatedAt : DateTime
+    }
+
+
+    class Booking <<Entity>> #FDF4FF {
+        +Id : int
+        +CustomerId : long
+        +VehicleId : int
+        +DriverId : int?
+        +BookingReference : string
+        +PickupLocation : string
+        +DropoffLocation : string?
+        +PickupDatetime : DateTime
+        +ReturnDatetime : DateTime
+        +RentalDays : int?
+        +EstimatedDistanceKm : decimal?
+        +WithDriver : bool
+        +BaseRentalCost : decimal
+        +DriverFee : decimal
+        +TaxAmount : decimal
+        +DiscountAmount : decimal
+        +TotalAmount : decimal
+        +SpecialNotes : string?
+        +BookingStatus : BookingStatus
+        +CancelledReason : string?
+        +CancelledAt : DateTime?
+        +ConfirmedAt : DateTime?
+        +CompletedAt : DateTime?
+        +CreatedAt : DateTime
+        +UpdatedAt : DateTime
+    }
+
+
+    class Vehicle <<Entity>> #FDF4FF {
+        +Id : int
+        +BrandId : int?
+        +TypeId : int?
+        +Model : string
+        +RegistrationNumber : string
+        +ManufactureYear : int
+        +Color : string?
+        +Transmission : TransmissionType?
+        +Fuel : FuelType?
+        +SeatCapacity : int?
+        +LuggageCapacity : int?
+        +DailyRentalPrice : decimal
+        +PricePerKm : decimal?
+        +Description : string?
+        +MainImageUrl : string?
+        +AirConditioned : bool
+        +HasBluetooth : bool
+        +HasGps : bool
+        +Status : VehicleStatus
+        +AverageRating : decimal
+        +TotalBookings : int
+        +CreatedBy : int?
+        +CreatedAt : DateTime
+        +UpdatedAt : DateTime
+        +IsDeleted : bool
+    }
+
+
+    class VehicleBrand <<Entity>> #FDF4FF {
+        +Id : int
+        +Name : string
+        +CreatedAt : DateTime
+    }
+
+
+    class VehicleType <<Entity>> #FDF4FF {
+        +Id : int
+        +Name : string
+        +Description : string?
+        +CreatedAt : DateTime
+    }
+
+
+    class VehicleImages <<Entity>> #FDF4FF {
+        +Id : long
+        +VehicleId : int
+        +ImageUrl : string
+        +CreatedAt : DateTime
+    }
+
+
+    class VehicleMaintenance <<Entity>> #FDF4FF {
+        +Id : int
+        +VehicleId : int
+        +MaintenanceStart : DateOnly
+        +MaintenanceEnd : DateOnly
+        +Description : string
+        +Cost : decimal
+        +Status : MaintenanceStatus
+        +CreatedAt : DateTime
+        +UpdatedAt : DateTime
+    }
+
+
+    class Payments <<Entity>> #FDF4FF {
+        +Id : long
+        +BookingId : long
+        +CustomerId : long
+        +TransactionReference : string?
+        +Amount : decimal
+        +PaymentMethod : PaymentMethod
+        +PaymentStatus : PaymentStatus
+        +PaymentGateway : string?
+        +PaidAt : DateTime?
+        +FailureReason : string?
+        +CreatedAt : DateTime
+    }
+
+
+    class Review <<Entity>> #FDF4FF {
+        +Id : int
+        +BookingId : int
+        +CustomerId : long
+        +VehicleId : int?
+        +DriverId : int?
+        +VehicleRating : int?
+        +DriverRating : int?
+        +Comment : string?
+        +CreatedAt : DateTime
+    }
+
+
+    class ContactRequest <<Entity>> #FDF4FF {
+        +Id : int
+        +UserId : long?
+        +Name : string
+        +Email : string
+        +Subject : string
+        +Message : string
+        +Status : string
+        +AdminNotes : string?
+        +CreatedAt : DateTime
+        +UpdatedAt : DateTime
+    }
+
+
+    class DriverBookingCancellation <<Entity>> #FDF4FF {
+        +Id : int
+        +BookingId : int
+        +DriverId : int
+        +CancellationReason : string?
+        +CancelledAt : DateTime
+        +CreatedAt : DateTime
+    }
+
+
+    class VerificationCodes <<Entity>> #FDF4FF {
+        +Id : int
+        +UserId : int
+        +VerificationCode : string
+        +IsUsed : bool
+        +ExpiresAt : DateTime
+    }
+}
+
+
+' ========================================================
+' ENUMS
+' ========================================================
+
+package "Domain Enums" as ENUMS #FCE7F3 {
+
+    enum UserRole {
+        ADMIN
+        CUSTOMER
+        DRIVER
+    }
+
+    enum UserStatus {
+        ACTIVE
+        INACTIVE
+        SUSPENDED
+    }
+
+    enum BookingStatus {
+        PENDING
+        CONFIRMED
+        ONGOING
+        COMPLETED
+        CANCELLED
+        REJECTED
+    }
+
+    enum DriverStatus {
+        PENDING
+        APPROVED
+        REJECTED
+        DEACTIVATED
+    }
+
+    enum AvailabilityStatus {
+        AVAILABLE
+        UNAVAILABLE
+        ON_TRIP
+    }
+
+    enum VehicleStatus {
+        AVAILABLE
+        BOOKED
+        MAINTENANCE
+        UNAVAILABLE
+    }
+
+    enum MaintenanceStatus {
+        COMPLETED
+        UNDER_MAINTENANCE
+        DELETED
+    }
+
+    enum PaymentStatus {
+        PENDING
+        COMPLETED
+        FAILED
+        REFUNDED
+    }
+
+    enum PaymentMethod {
+        CARD
+        BANK_TRANSFER
+        ONLINE
+        CASH
+    }
+
+    enum FuelType {
+        PETROL
+        DIESEL
+        HYBRID
+        ELECTRIC
+    }
+
+    enum TransmissionType {
+        MANUAL
+        AUTOMATIC
+    }
+
+    enum BlobType {
+        VEHICLE
+        PROFILE
+        LICENSE
+    }
+
+    enum OAuthProvider {
+        GOOGLE
+        APPLE
+        FACEBOOK
+    }
+}
+
+
+' ========================================================
+' USER RELATIONSHIPS
+' ========================================================
+
+User "1" <-- "0..*" Booking : customer
+
+User "1" <-- "0..*" Driver : driver profile
+
+User "1" <-- "0..*" Review : customer
+
+User "0..1" <-- "0..*" ContactRequest
+
+User "1" <-- "0..*" VerificationCodes
+
+
+' ========================================================
+' BOOKING RELATIONSHIPS
+' ========================================================
+
+Vehicle "1" <-- "0..*" Booking
+
+Driver "0..1" <-- "0..*" Booking
+
+Booking "1" *-- "0..*" DriverBookingCancellation
+
+Booking "1" <-- "0..*" Payments
+
+Booking "1" <-- "0..*" Review
+
+
+' ========================================================
+' DRIVER RELATIONSHIPS
+' ========================================================
+
+Driver "1" <-- "0..*" DriverBookingCancellation
+
+Driver "0..*" --> "0..1" User : approved by
+
+
+' ========================================================
+' VEHICLE RELATIONSHIPS
+' ========================================================
+
+VehicleBrand "0..1" <-- "0..*" Vehicle
+
+VehicleType "0..1" <-- "0..*" Vehicle
+
+Vehicle "1" *-- "0..*" VehicleImages
+
+Vehicle "1" <-- "0..*" VehicleMaintenance
+
+Vehicle "0..*" <-- "0..1" Review
+
+Driver "0..*" <-- "0..1" Review
+
+
+' ========================================================
+' ENUM DEPENDENCIES
+' ========================================================
+
+User ..> UserRole
+User ..> UserStatus
+
+Driver ..> DriverStatus
+Driver ..> AvailabilityStatus
+
+Booking ..> BookingStatus
+
+Vehicle ..> VehicleStatus
+Vehicle ..> FuelType
+Vehicle ..> TransmissionType
+
+VehicleMaintenance ..> MaintenanceStatus
+
+Payments ..> PaymentStatus
+Payments ..> PaymentMethod
+
+
+@enduml

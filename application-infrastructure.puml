@@ -1,0 +1,223 @@
+@startuml ShanEnterprises_Application_Infrastructure
+
+!pragma layout smetana
+
+skinparam dpi 200
+skinparam shadowing false
+skinparam packageStyle rectangle
+skinparam classAttributeIconSize 0
+skinparam roundCorner 8
+skinparam linetype ortho
+skinparam nodesep 40
+skinparam ranksep 50
+
+skinparam defaultFontName "Helvetica"
+skinparam defaultFontSize 11
+
+skinparam package {
+    BorderColor #374151
+    BorderThickness 1.5
+    FontColor #111827
+    FontStyle bold
+}
+
+skinparam class {
+    BorderColor #4B5563
+    HeaderBackgroundColor #F3F4F6
+    ArrowColor #2563EB
+    ArrowThickness 1.2
+}
+
+
+' ========================================================
+' APPLICATION SERVICES
+' ========================================================
+
+package "Application Layer" as APP #F0FDF4 {
+
+    package "Services" as SERVICES #DCFCE7 {
+
+        class AuthService <<Service>>
+        class BookingService <<Service>>
+        class ContactRequestService <<Service>>
+        class DashboardService <<Service>>
+        class DriverService <<Service>>
+        class ReviewService <<Service>>
+        class UserService <<Service>>
+        class VehicleMaintenanceService <<Service>>
+        class VehicleService <<Service>>
+    }
+
+
+    package "Repository Interfaces" as REPO_INTERFACES #DCFCE7 {
+
+        interface IBookingRepository
+        interface IContactRequestRepository
+        interface IDashboardRepository
+        interface IDriverRepository
+        interface IPaymentRepository
+        interface IReviewRepository
+        interface IUserRepository
+        interface IVehicleMaintenanceRepository
+        interface IVehicleRepository
+        interface IVerificationCodeRepository
+    }
+}
+
+
+' ========================================================
+' REPOSITORY IMPLEMENTATIONS
+' ========================================================
+
+package "Infrastructure Layer" as INFRA #FEF3C7 {
+
+    package "Repositories" as REPOSITORIES #FDE68A {
+
+        class BookingRepository <<Repository>>
+        class ContactRequestRepository <<Repository>>
+        class DashboardRepository <<Repository>>
+        class DriverRepository <<Repository>>
+        class PaymentRepository <<Repository>>
+        class ReviewRepository <<Repository>>
+        class UserRepository <<Repository>>
+        class VehicleMaintenanceRepository <<Repository>>
+        class VehicleRepository <<Repository>>
+        class VerificationCodeRepository <<Repository>>
+    }
+
+
+    package "Persistence" as PERSISTENCE #FDE68A {
+
+        class AppDbContext <<DbContext>>
+    }
+
+
+    package "External Services" as EXTERNAL #FDE68A {
+
+        interface IStorageService
+        class BlobService <<External Service>>
+
+        interface IEmailService
+        class EmailService <<External Service>>
+
+        interface IOAuthService
+        class GoogleOAuthService <<External Service>>
+
+        interface IImageCompressor
+        class ImageCompressor <<External Service>>
+
+        interface IRecommendationService
+        class RecommendationService <<External Service>>
+
+        interface IPaymentService
+        class StripeService <<External Service>>
+    }
+}
+
+
+' ========================================================
+' SERVICE -> REPOSITORY
+' ========================================================
+
+AuthService ..> IUserRepository : uses
+AuthService ..> IVerificationCodeRepository : uses
+
+BookingService ..> IBookingRepository : uses
+BookingService ..> IVehicleRepository : uses
+BookingService ..> IDriverRepository : uses
+BookingService ..> IPaymentRepository : uses
+BookingService ..> IUserRepository : uses
+
+ContactRequestService ..> IContactRequestRepository : uses
+
+DashboardService ..> IDashboardRepository : uses
+
+DriverService ..> IDriverRepository : uses
+DriverService ..> IBookingRepository : uses
+DriverService ..> IUserRepository : uses
+
+ReviewService ..> IReviewRepository : uses
+ReviewService ..> IVehicleRepository : uses
+ReviewService ..> IBookingRepository : uses
+
+UserService ..> IUserRepository : uses
+
+VehicleMaintenanceService ..> IVehicleMaintenanceRepository : uses
+VehicleMaintenanceService ..> IVehicleRepository : uses
+
+VehicleService ..> IVehicleRepository : uses
+
+
+' ========================================================
+' SERVICE -> EXTERNAL SERVICES
+' ========================================================
+
+AuthService ..> IEmailService : uses
+AuthService ..> IOAuthService : uses
+
+BookingService ..> IPaymentService : uses
+BookingService ..> IEmailService : uses
+
+ContactRequestService ..> IEmailService : uses
+
+DriverService ..> IEmailService : uses
+
+ReviewService ..> IRecommendationService : uses
+
+UserService ..> IStorageService : uses
+
+VehicleService ..> IRecommendationService : uses
+
+
+' ========================================================
+' REPOSITORY REALIZATIONS
+' ========================================================
+
+IBookingRepository <|.. BookingRepository
+IContactRequestRepository <|.. ContactRequestRepository
+IDashboardRepository <|.. DashboardRepository
+IDriverRepository <|.. DriverRepository
+IPaymentRepository <|.. PaymentRepository
+IReviewRepository <|.. ReviewRepository
+IUserRepository <|.. UserRepository
+IVehicleMaintenanceRepository <|.. VehicleMaintenanceRepository
+IVehicleRepository <|.. VehicleRepository
+IVerificationCodeRepository <|.. VerificationCodeRepository
+
+
+' ========================================================
+' REPOSITORY -> DATABASE
+' ========================================================
+
+BookingRepository ..> AppDbContext : uses
+ContactRequestRepository ..> AppDbContext : uses
+DashboardRepository ..> AppDbContext : uses
+DriverRepository ..> AppDbContext : uses
+PaymentRepository ..> AppDbContext : uses
+ReviewRepository ..> AppDbContext : uses
+UserRepository ..> AppDbContext : uses
+VehicleMaintenanceRepository ..> AppDbContext : uses
+VehicleRepository ..> AppDbContext : uses
+VerificationCodeRepository ..> AppDbContext : uses
+
+
+' ========================================================
+' EXTERNAL SERVICE REALIZATIONS
+' ========================================================
+
+IStorageService <|.. BlobService
+IEmailService <|.. EmailService
+IOAuthService <|.. GoogleOAuthService
+IImageCompressor <|.. ImageCompressor
+IRecommendationService <|.. RecommendationService
+IPaymentService <|.. StripeService
+
+
+' ========================================================
+' EXTERNAL SERVICE DEPENDENCIES
+' ========================================================
+
+BlobService ..> IImageCompressor : uses
+
+
+@enduml

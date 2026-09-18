@@ -1,0 +1,170 @@
+@startuml ShanEnterprises_Full_Architecture
+
+!pragma layout smetana
+
+skinparam dpi 200
+skinparam shadowing false
+skinparam packageStyle rectangle
+skinparam roundCorner 10
+skinparam linetype ortho
+skinparam nodesep 60
+skinparam ranksep 70
+
+skinparam defaultFontName "Helvetica"
+skinparam defaultFontSize 12
+
+skinparam package {
+    BorderColor #374151
+    BorderThickness 2
+    FontColor #111827
+    FontStyle bold
+}
+
+skinparam rectangle {
+    BorderColor #4B5563
+    BorderThickness 1.5
+}
+
+' ========================================================
+' CLIENTS
+' ========================================================
+
+package "Client Applications" as CLIENTS #E0F2FE {
+
+    rectangle "Customer Web App\nReact" as CUSTOMER_FE
+
+    rectangle "Admin Portal\nReact" as ADMIN_FE
+}
+
+
+' ========================================================
+' API
+' ========================================================
+
+package "API Layer" as API #DBEAFE {
+
+    rectangle "ASP.NET Core Web API\nControllers" as API_CONTROLLERS
+
+    rectangle "Authentication\nAuthorization\nException Middleware" as API_MIDDLEWARE
+}
+
+
+' ========================================================
+' APPLICATION
+' ========================================================
+
+package "Application Layer" as APP #DCFCE7 {
+
+    rectangle "Application Services" as SERVICES
+
+    rectangle "Repository Interfaces" as REPO_INTERFACES
+}
+
+
+' ========================================================
+' INFRASTRUCTURE
+' ========================================================
+
+package "Infrastructure Layer" as INFRA #FEF3C7 {
+
+    rectangle "Repository Implementations" as REPOSITORIES
+
+    rectangle "Entity Framework Core\nAppDbContext" as DBCONTEXT
+
+    rectangle "External Services" as EXTERNAL
+}
+
+
+' ========================================================
+' DOMAIN
+' ========================================================
+
+package "Core / Domain Layer" as DOMAIN #FCE7F3 {
+
+    rectangle "Domain Entities" as ENTITIES
+
+    rectangle "Domain Enums" as ENUMS
+}
+
+
+' ========================================================
+' DATABASE
+' ========================================================
+
+database "Application Database\nPostgreSQL / MySQL" as DATABASE
+
+
+' ========================================================
+' EXTERNAL SYSTEMS
+' ========================================================
+
+cloud "Stripe\nPayment Gateway" as STRIPE
+
+cloud "Google OAuth" as GOOGLE
+
+cloud "Email Provider" as EMAIL
+
+cloud "Cloud Blob Storage" as STORAGE
+
+cloud "Recommendation / ML Service" as ML
+
+
+' ========================================================
+' CLIENT -> API
+' ========================================================
+
+CUSTOMER_FE --> API_CONTROLLERS : HTTPS / REST API
+
+ADMIN_FE --> API_CONTROLLERS : HTTPS / REST API
+
+
+' ========================================================
+' API LAYER
+' ========================================================
+
+API_CONTROLLERS --> API_MIDDLEWARE
+
+API_MIDDLEWARE --> SERVICES
+
+
+' ========================================================
+' APPLICATION
+' ========================================================
+
+SERVICES --> REPO_INTERFACES
+
+REPO_INTERFACES --> REPOSITORIES
+
+
+' ========================================================
+' INFRASTRUCTURE
+' ========================================================
+
+REPOSITORIES --> DBCONTEXT
+
+DBCONTEXT --> DATABASE
+
+SERVICES --> EXTERNAL
+
+
+' ========================================================
+' DOMAIN
+' ========================================================
+
+SERVICES --> ENTITIES
+
+REPOSITORIES --> ENTITIES
+
+
+' ========================================================
+' EXTERNAL SERVICES
+' ========================================================
+
+EXTERNAL --> STRIPE
+EXTERNAL --> GOOGLE
+EXTERNAL --> EMAIL
+EXTERNAL --> STORAGE
+EXTERNAL --> ML
+
+
+@enduml

@@ -1,0 +1,942 @@
+@startuml ShanEnterprises_ClassDiagram
+!pragma layout smetana
+skinparam dpi 300
+skinparam shadowing false
+skinparam packageStyle rectangle
+skinparam classAttributeIconSize 0
+skinparam roundCorner 8
+skinparam linetype ortho
+skinparam nodesep 50
+skinparam ranksep 60
+skinparam defaultFontName "Helvetica", Arial, sans-serif
+skinparam defaultFontSize 11
+
+skinparam package {
+    BorderColor #374151
+    BorderThickness 1.5
+    FontColor #111827
+    FontStyle bold
+}
+
+skinparam class {
+    BorderColor #4B5563
+    HeaderBackgroundColor #F3F4F6
+    ArrowColor #2563EB
+    ArrowThickness 1.2
+}
+
+' ========================================================
+' 1. API LAYER
+' ========================================================
+package "API Layer" as API #EFF6FF {
+    class AuthController <<Controller>> #DBEAFE {
+        +RegisterUser(CreateUserRequest request) : Task~ApiResponse
+        +LoginUser(LoginRequest request) : Task~ApiResponse
+        +RefreshToken() : Task~ApiResponse
+        +VerifyCode(string code) : Task~ApiResponse
+        +ResendVerificationCode(string email) : Task~ApiResponse
+        +GetGoogleOauthUrl() : IActionResult
+        +LoginUserViaSocialMedia(string code) : Task~ApiResponse
+    }
+    class BookingController <<Controller>> #DBEAFE {
+        +AddBooking(BookingCreateRequest request) : Task~ApiResponse
+        +GetAllBookings(BookingSearchRequest request) : Task~ApiResponse
+        +GetBookingsForUser(BookingSearchRequest request) : Task~ApiResponse
+        +VerifyBooking(string sessionId) : Task~ApiResponse
+        +DeleteBooking(int bookingId) : Task~ApiResponse
+        +GetAllBookings(int bookingId) : Task~ApiResponse
+        +AssignDriverToBooking(int bookingId, AssignDriverRequest request) : Task~ApiResponse
+        +ChangeDriver(int bookingId, AssignDriverRequest request) : Task~ApiResponse
+        +AutoAssignDriver(int bookingId) : Task~ApiResponse
+    }
+    class ContactController <<Controller>> #DBEAFE {
+        +SubmitContactRequest(ContactRequestCreateDto dto) : Task~ApiResponse
+        +GetAllContactRequests(ContactRequestSearchDto search) : Task~ApiResponse
+        +GetContactRequest(int id) : Task~ApiResponse
+        +UpdateStatus(int id, UpdateContactStatusDto dto) : Task~ApiResponse
+    }
+    class DashboardController <<Controller>> #DBEAFE {
+        +GetDashboardStats() : Task~ApiResponse
+    }
+    class DriverController <<Controller>> #DBEAFE {
+        +SubmitDriverRequest(DriverCreateRequest createRequest) : Task~ApiResponse
+        +ApproveDriver(int driverId) : Task~ApiResponse
+        +RejectDriver(int driverId) : Task~ApiResponse
+        +GetDriversByStatus(DriverSearchRequest request) : Task~ApiResponse
+        +GetMyDriverStatus() : Task~ApiResponse
+        +GetAvailableDrivers(AvailableDriverRequest request) : Task~ApiResponse
+        +GetDriverById(int driverId) : Task~ApiResponse
+        +GetMyTrips(int pageNumber, int pageSize) : Task~ApiResponse
+        +GetDriverTrips(int driverId, int pageNumber, int pageSize) : Task~ApiResponse
+        +CancelTripAssignment(int bookingId) : Task~ApiResponse
+    }
+    class HealthController <<Controller>> #DBEAFE {
+        +Get() : ApiResponse
+    }
+    class StorageController <<Controller>> #DBEAFE {
+        +UploadBlob(IFormFile file, BlobType blobType, string fileName) : Task~ApiResponse
+        +UploadSingleBlob(IFormFile file, BlobType blobType) : Task~ApiResponse
+        +UploadBlobs(List~IFormFile~ files, BlobType blobType) : Task~ApiResponse
+    }
+    class TestController <<Controller>> #DBEAFE {
+        +SendEmail(string email, string subject) : Task~I
+        +GetStripeCheckout() : void
+        +GetStripeCheckoutPaid(string paymentOrSessionId) : void
+        +GetStripeCheckoutRefund(string paymentOrSessionId) : void
+    }
+    class UserController <<Controller>> #DBEAFE {
+        +GetProfile() : Task~ApiResponse
+        +UpdateProfile(UserProfileUpdateRequest request) : Task~ApiResponse
+        +UploadProfileImage(IFormFile file) : Task~ApiResponse
+        +RemoveProfileImage() : Task~ApiResponse
+        +GetUserById(int id) : Task~ApiResponse
+        +UpdateUserDetails(UserUpdateRequest request) : Task~ApiResponse
+        +GetCustomers(CustomerSearchRequest request) : Task~ApiResponse
+        +UpdateCustomerStatus(long userId, CustomerStatusUpdateRequest request) : Task~ApiResponse
+    }
+    class VehicleController <<Controller>> #DBEAFE {
+        +AddVehicle(VehicleCreateRequest request) : Task~ApiResponse
+        +SearchVehicles(VehicleSearchRequest request) : Task~ApiResponse
+        +GetVehicleBrands() : Task~ApiResponse
+        +GetVehicleTypes() : Task~ApiResponse
+        +DeleteVehicle(int id) : Task~ApiResponse
+        +GetVehicleImages(int id) : Task~ApiResponse
+        +GetVehicleById(int id) : Task~ApiResponse
+        +GetBookedDates(int id) : Task~ApiResponse
+        +AddReview(int vehicleId, AddReviewRequest request) : Task~ApiResponse
+        +GetVehicleReviews(int vehicleId, SearchRequest request) : Task~ApiResponse
+        +GetReview(int id) : Task~ApiResponse
+        +DeleteReview(int vehicleId, int reviewId) : Task~ApiResponse
+        +SetVehicleAvailability(int id, SetVehicleAvailabilityRequest request) : Task~ApiResponse
+    }
+    class VehicleMaintenanceController <<Controller>> #DBEAFE {
+        +GetAllVehicleMaintenances() : Task~ApiResponse
+        +AddVehicleMaintenance(MaintenanceCreateRequest request) : Task~ApiResponse
+        +GetVehicleMaintenanceById(int id) : Task~ApiResponse
+        +UpdateVehicleMaintenance(int id, MaintenanceUpdateRequest request) : Task~ApiResponse
+        +DeleteVehicleMaintenance(int id) : Task~ApiResponse
+        +SearchVehicleMaintenances(MaintenanceSearchRequest request) : Task~ApiResponse
+        +GetMaintenanceStats(string groupBy, int? year) : Task~ApiResponse
+    }
+    class CustomAuthorizeAttribute #E0E7FF {
+    }
+    class ExceptionMiddleware #E0E7FF {
+        +InvokeAsync(HttpContext context) : void
+    }
+}
+
+' ========================================================
+' 2. APPLICATION LAYER
+' ========================================================
+package "Application Layer" as APP #F0FDF4 {
+    package "Services" as APP_SERVICES #DCFCE7 {
+        interface IAuthService <<Service Interface>> #BBF7D0 {
+            +RegisterUser(CreateUserRequest request, bool socialMediaRequest) : Task~User
+            +LoginUser(LoginRequest request) : Task~LoginResponse
+            +RefreshToken(string refreshToken) : Task~LoginResponse
+            +VerifyCode(string code) : void
+            +ResendVerificationCode(string email) : void
+            +GetOAuthUrl() : string
+            +LoginViaSocialMedia(string code) : Task~LoginResponse
+        }
+        class AuthService <<Service Implementation>> #F0FDF4 {
+            +RegisterUser(CreateUserRequest request, bool socialMediaRequest) : Task~User
+            +LoginUser(LoginRequest request) : Task~LoginResponse
+            +RefreshToken(string refreshToken) : Task~LoginResponse
+            +VerifyCode(string code) : void
+            +ResendVerificationCode(string email) : void
+            +GetOAuthUrl() : string
+            +LoginViaSocialMedia(string code) : Task~LoginResponse
+        }
+        interface IBookingService <<Service Interface>> #BBF7D0 {
+            +AddBooking(BookingCreateRequest request) : Task~string
+            +UpdateBooking(int id, BookingUpdateRequest request) : void
+            +GetBookingById(int id) : Task~BookingReadResponse
+            +GetAllBookings(BookingSearchRequest request) : Task~SearchResponse~BookingReadResponse
+            +DeleteBooking(int id) : void
+            +ChangeBookingDriverAsync(int bookingId, int? driverId) : void
+            +AutoAssignDriverAsync(int bookingId) : void
+            +GetBookedDatesByVehicleId(int vehicleId) : Task~IReadOnlyCollection~BookedDateRangeResponse
+            +GetAllBookingsForUser(BookingSearchRequest request) : Task~SearchResponse~BookingReadResponse
+            +VerifyBooking(string sessionId) : Task~bool
+            +CompleteBooking(int bookingId) : void
+            +AssignDriverToBooking(int bookingId, AssignDriverRequest request) : void
+        }
+        class BookingService <<Service Implementation>> #F0FDF4 {
+            +AddBooking(BookingCreateRequest request) : Task~string
+            +UpdateBooking(int id, BookingUpdateRequest request) : void
+            +GetBookingById(int id) : Task~BookingReadResponse
+            +GetAllBookings(BookingSearchRequest request) : Task~SearchResponse~BookingReadResponse
+            +UpdateBookingStatus(int id, BookingStatusUpdatRequest request) : void
+            +DeleteBooking(int id) : void
+            +GetBookedDatesByVehicleId(int vehicleId) : Task~IReadOnlyCollection~BookedDateRangeResponse
+            +GetAllBookingsForUser(BookingSearchRequest request) : Task~SearchResponse~BookingReadResponse
+            +VerifyBooking(string sessionId) : Task~bool
+            +CompleteBooking(int bookingId) : void
+            +AssignDriverToBooking(int bookingId, AssignDriverRequest request) : void
+            +ChangeBookingDriverAsync(int bookingId, int? driverId) : void
+            +AutoAssignDriverAsync(int bookingId) : void
+        }
+        interface IContactRequestService <<Service Interface>> #BBF7D0 {
+            +SubmitContactRequestAsync(ContactRequestCreateDto dto) : void
+            +GetAllContactRequestsAsync(ContactRequestSearchDto search) : Task~SearchResponse~ContactRequestResponse
+            +GetContactRequestByIdAsync(int id) : Task~ContactRequestResponse
+            +UpdateContactRequestStatusAsync(int id, UpdateContactStatusDto dto) : void
+        }
+        class ContactRequestService <<Service Implementation>> #F0FDF4 {
+            +SubmitContactRequestAsync(ContactRequestCreateDto dto) : void
+            +GetAllContactRequestsAsync(ContactRequestSearchDto search) : Task~SearchResponse~ContactRequestResponse
+            +GetContactRequestByIdAsync(int id) : Task~ContactRequestResponse
+            +UpdateContactRequestStatusAsync(int id, UpdateContactStatusDto dto) : void
+        }
+        interface IContextService <<Service Interface>> #BBF7D0 {
+            +GetUser() : Task~User
+        }
+        class ContextService <<Service Implementation>> #F0FDF4 {
+            +GetUser() : Task~User
+        }
+        interface IDashboardService <<Service Interface>> #BBF7D0 {
+            +GetDashboardStatsAsync() : Task~DashboardStatsResponse
+        }
+        class DashboardService <<Service Implementation>> #F0FDF4 {
+            +GetDashboardStatsAsync() : Task~DashboardStatsResponse
+        }
+        interface IDriverService <<Service Interface>> #BBF7D0 {
+            +SubmitDriverRequestAsync(DriverCreateRequest createRequest) : void
+            +ApproveDriverAsync(int driverId) : void
+            +RejectDriverAsync(int driverId) : void
+            +GetDriversByStatusAsync(DriverSearchRequest request) : Task~SearchResponse~DriverResponse
+            +GetMyDriverStatusAsync() : Task~DriverStatusResponse
+            +GetAvailableDriversAsync(AvailableDriverRequest request) : Task~IReadOnlyCollection~DriverResponse
+            +GetDriverByIdAsync(int driverId) : Task~DriverResponse
+            +GetMyTripsAsync(int pageNumber, int pageSize) : Task~SearchResponse~BookingReadResponse
+            +GetDriverTripsAsync(int driverId, int pageNumber, int pageSize) : Task~SearchResponse~BookingReadResponse
+            +CancelTripAssignmentAsync(int bookingId) : Task~DriverTripCancelResponse
+        }
+        class DriverService <<Service Implementation>> #F0FDF4 {
+            +SubmitDriverRequestAsync(DriverCreateRequest createRequest) : void
+            +ApproveDriverAsync(int driverId) : void
+            +RejectDriverAsync(int driverId) : void
+            +GetDriversByStatusAsync(DriverSearchRequest request) : Task~SearchResponse~DriverResponse
+            +GetMyDriverStatusAsync() : Task~DriverStatusResponse
+            +GetAvailableDriversAsync(AvailableDriverRequest request) : Task~IReadOnlyCollection~DriverResponse
+            +GetDriverByIdAsync(int driverId) : Task~DriverResponse
+            +GetMyTripsAsync(int pageNumber, int pageSize) : Task~SearchResponse~BookingReadResponse
+            +GetDriverTripsAsync(int driverId, int pageNumber, int pageSize) : Task~SearchResponse~BookingReadResponse
+            +CancelTripAssignmentAsync(int bookingId) : Task~DriverTripCancelResponse
+        }
+        interface IReviewService <<Service Interface>> #BBF7D0 {
+            +AddReview(int vehicleId, AddReviewRequest request) : void
+            +GetUserReviews(int vehicleId) : Task~UserReviewResponse
+            +GetReviews(int vehicleId, SearchRequest request) : Task~SearchResponse~ReviewResponse
+            +DeleteReview(int reviewId) : void
+        }
+        class ReviewService <<Service Implementation>> #F0FDF4 {
+            +AddReview(int vehicleId, AddReviewRequest request) : void
+            +GetUserReviews(int vehicleId) : Task~UserReviewResponse
+            +GetReviews(int vehicleId, SearchRequest request) : Task~SearchResponse~ReviewResponse
+            +DeleteReview(int reviewId) : void
+        }
+        interface IUserService <<Service Interface>> #BBF7D0 {
+            +GetUserByIdAsync(int id) : Task~UserResponse?
+            +UpdateUserAsync(UserUpdateRequest request) : Task~UserResponse
+            +GetCurrentUserProfileAsync() : Task~UserResponse
+            +UpdateCurrentUserProfileAsync(UserProfileUpdateRequest request) : Task~UserResponse
+            +UpdateProfileImageAsync(IFormFile file) : Task~UserResponse
+            +RemoveProfileImageAsync() : Task~UserResponse
+            +GetCustomersAsync(CustomerSearchRequest request) : Task~SearchResponse~UserResponse
+            +UpdateUserStatusAsync(long userId, UserStatus status) : Task~UserResponse
+        }
+        class UserService <<Service Implementation>> #F0FDF4 {
+            +GetUserByIdAsync(int id) : Task~UserResponse?
+            +GetCurrentUserProfileAsync() : Task~UserResponse
+            +UpdateCurrentUserProfileAsync(UserProfileUpdateRequest request) : Task~UserResponse
+            +UpdateProfileImageAsync(IFormFile file) : Task~UserResponse
+            +RemoveProfileImageAsync() : Task~UserResponse
+            +UpdateUserAsync(UserUpdateRequest request) : Task~UserResponse
+            +GetCustomersAsync(CustomerSearchRequest request) : Task~SearchResponse~UserResponse
+            +UpdateUserStatusAsync(long userId, UserStatus status) : Task~UserResponse
+        }
+        interface IVehicleMaintenanceService <<Service Interface>> #BBF7D0 {
+            +AddVehicleMaintenance(MaintenanceCreateRequest request) : void
+            +GetVehicleMaintenanceById(int id) : Task~MaintenanceReadResponse
+            +GetAllVehicleMaintenances() : Task~SearchResponse~MaintenanceReadResponse
+            +UpdateVehicleMaintenance(int id, MaintenanceUpdateRequest request) : void
+            +DeleteVehicleMaintenance(int id) : void
+            +SearchVehicleMaintenances(MaintenanceSearchRequest request) : Task~SearchResponse~MaintenanceReadResponse
+            +GetMaintenanceStats(string groupBy, int? year) : Task~IReadOnlyCollection~MaintenanceStatsResponse
+        }
+        class VehicleMaintenanceService <<Service Implementation>> #F0FDF4 {
+            +AddVehicleMaintenance(MaintenanceCreateRequest request) : void
+            +GetAllVehicleMaintenances() : Task~SearchResponse~MaintenanceReadResponse
+            +GetVehicleMaintenanceById(int id) : Task~MaintenanceReadResponse
+            +UpdateVehicleMaintenance(int id, MaintenanceUpdateRequest request) : void
+            +DeleteVehicleMaintenance(int id) : void
+            +SearchVehicleMaintenances(MaintenanceSearchRequest request) : Task~SearchResponse~MaintenanceReadResponse
+            +GetMaintenanceStats(string groupBy, int? year) : Task~IReadOnlyCollection~MaintenanceStatsResponse
+        }
+        interface IVehicleService <<Service Interface>> #BBF7D0 {
+            +AddVehicle(VehicleCreateRequest request) : void
+            +UpdateVehicle(int id, VehicleUpdateRequest request) : void
+            +SearchVehicles(VehicleSearchRequest request) : Task~SearchResponse~VehicleResponse
+            +GetAllBrands() : Task~IReadOnlyCollection~VehicleBrand
+            +GetAllVehicleTypes() : Task~IReadOnlyCollection~VehicleType
+            +DeleteVehicle(int id) : void
+            +GetVehicleImagesByVehicleIdAsync(int vehicleId) : Task~List~VehicleImages
+            +GetVehicleById(int vehicleId) : Task~VehicleResponse
+            +SetVehicleAvailability(int id, bool makeUnavailable) : void
+        }
+        class VehicleService <<Service Implementation>> #F0FDF4 {
+            +AddVehicle(VehicleCreateRequest request) : void
+            +UpdateVehicle(int id, VehicleUpdateRequest request) : void
+            +SearchVehicles(VehicleSearchRequest request) : Task~SearchResponse~VehicleResponse
+            +GetAllBrands() : Task~IReadOnlyCollection~VehicleBrand
+            +GetAllVehicleTypes() : Task~IReadOnlyCollection~VehicleType
+            +DeleteVehicle(int id) : void
+            +GetVehicleImagesByVehicleIdAsync(int vehicleId) : Task~List~VehicleImages
+            +GetVehicleById(int vehicleId) : Task~VehicleResponse
+            +SetVehicleAvailability(int id, bool makeUnavailable) : void
+        }
+    }
+
+    package "Repositories" as APP_REPOS #DCFCE7 {
+        interface IBookingRepository <<Repository Interface>> #BBF7D0 {
+            +AddBooking(Booking booking) : Task~Booking
+            +GetBookingById(int id) : Task~Booking?
+            +HasActiveBookingsForDriverAsync(int driverId, BookingStatus statuses) : Task~bool
+            +GetBookingByIdForCustomerAsync(int bookingId, long customerId) : Task~Booking?
+            +UpdateBooking(Booking booking) : void
+            +GetAllBookings(BookingSearchRequest request) : 
+            +DeleteBooking(Booking booking) : void
+            +IsBooked(int vehicleId, DateTime from, DateTime to) : Task~bool
+            +GetBookedDatesByVehicleId(int vehicleId) : Task~IReadOnlyCollection~BookedDateRangeResponse
+            +SaveAsync() : void
+            +GetBookingByVehicleIdAndUserId(int vehicleId, int userId, BookingStatus status) : Task~Booking
+        }
+        class BookingRepository <<Repository Implementation>> #F0FDF4 {
+            +AddBooking(Booking booking) : Task~Booking
+            +SaveAsync() : void
+            +IsBooked(int vehicleId, DateTime from, DateTime to) : Task~bool
+            +GetBookingById(int id) : Task~Booking?
+            +HasActiveBookingsForDriverAsync(int driverId, BookingStatus statuses) : Task~bool
+            +GetBookingByIdForCustomerAsync(int bookingId, long customerId) : Task~Booking?
+            +UpdateBooking(Booking booking) : void
+            +DeleteBooking(Booking booking) : void
+            +GetBookedDatesByVehicleId(int vehicleId) : Task~IReadOnlyCollection~BookedDateRangeResponse
+            +GetBookingByVehicleIdAndUserId(int vehicleId, int userId, BookingStatus status) : Task~Booking
+        }
+        interface IContactRequestRepository <<Repository Interface>> #BBF7D0 {
+            +AddAsync(ContactRequest request) : Task~ContactRequest
+            +UpdateAsync(ContactRequest request) : void
+            +GetByIdAsync(int id) : Task~ContactRequest?
+            +GetAllAsync(ContactRequestSearchDto search) : 
+        }
+        class ContactRequestRepository <<Repository Implementation>> #F0FDF4 {
+            +AddAsync(ContactRequest request) : Task~ContactRequest
+            +UpdateAsync(ContactRequest request) : void
+            +GetByIdAsync(int id) : Task~ContactRequest?
+        }
+        interface IDashboardRepository <<Repository Interface>> #BBF7D0 {
+            +GetDashboardStatsAsync() : Task~DashboardStatsResponse
+        }
+        class DashboardRepository <<Repository Implementation>> #F0FDF4 {
+            +GetDashboardStatsAsync() : Task~DashboardStatsResponse
+        }
+        interface IDriverRepository <<Repository Interface>> #BBF7D0 {
+            +AddDriverAsync(Driver driver) : Task~Driver
+            +UpdateDriverAsync(Driver driver) : void
+            +GetDriverByIdAsync(int id) : Task~Driver?
+            +GetDriverByUserIdAsync(long userId) : Task~Driver?
+            +HasActiveRequestAsync(long userId) : Task~bool
+            +GetDriversByStatusAsync(DriverSearchRequest request) : 
+            +GetAvailableDriversAsync(DateTime pickupDatetime, DateTime returnDatetime) : Task~IReadOnlyCollection~Driver
+            +GetDriverTripsAsync(int driverId) : Task~IReadOnlyCollection~Booking
+            +GetDriverTripsPaginatedAsync(int driverId, int pageNumber, int pageSize) : 
+            +AddDriverBookingCancellationAsync(DriverBookingCancellation cancellation) : void
+        }
+        class DriverRepository <<Repository Implementation>> #F0FDF4 {
+            +AddDriverAsync(Driver driver) : Task~Driver
+            +UpdateDriverAsync(Driver driver) : void
+            +GetDriverByIdAsync(int id) : Task~Driver?
+            +GetDriverByUserIdAsync(long userId) : Task~Driver?
+            +HasActiveRequestAsync(long userId) : Task~bool
+            +GetAvailableDriversAsync(DateTime pickupDatetime, DateTime returnDatetime) : Task~IReadOnlyCollection~Driver
+            +GetDriverTripsAsync(int driverId) : Task~IReadOnlyCollection~Booking
+            +AddDriverBookingCancellationAsync(DriverBookingCancellation cancellation) : void
+        }
+        interface IPaymentRepository <<Repository Interface>> #BBF7D0 {
+            +AddPayment(Payments payment) : void
+            +GetPaymentByReference(string reference) : Task~Payments
+            +GetPaymentByBookingId(long bookingId) : Task~Payments
+            +UpdatePayment(Payments payment) : void
+        }
+        class PaymentRepository <<Repository Implementation>> #F0FDF4 {
+            +AddPayment(Payments payment) : void
+            +GetPaymentByReference(string reference) : Task~Payments
+            +GetPaymentByBookingId(long bookingId) : Task~Payments
+            +UpdatePayment(Payments payment) : void
+        }
+        interface IReviewRepository <<Repository Interface>> #BBF7D0 {
+            +HasUserReviewedVehicle(long customerId, int vehicleId) : Task~bool
+            +GetCustomerCompletedBooking(long customerId, int vehicleId) : Task~Booking?
+            +AddReview(Review review) : void
+            +GetVehicleAverageRating(int vehicleId) : Task~decimal
+            +GetReviewByBookingId(int bookingId) : Task~Review
+            +GetReviewsByVehicleId(int vehicleId, int pageNumber, int pageSize) : Task~SearchResponse~Review
+            +DeleteReview(int reviewId) : Task~Review?
+        }
+        class ReviewRepository <<Repository Implementation>> #F0FDF4 {
+            +HasUserReviewedVehicle(long customerId, int vehicleId) : Task~bool
+            +GetCustomerCompletedBooking(long customerId, int vehicleId) : Task~Booking?
+            +AddReview(Review review) : void
+            +GetVehicleAverageRating(int vehicleId) : Task~decimal
+            +GetReviewByBookingId(int bookingId) : Task~Review
+            +GetReviewsByVehicleId(int vehicleId, int pageNumber, int pageSize) : Task~SearchResponse~Review
+            +DeleteReview(int reviewId) : Task~Review?
+        }
+        interface IUserRepository <<Repository Interface>> #BBF7D0 {
+            +AddUserAsync(User user) : Task~User
+            +GetUserByEmailAsync(string email) : Task~User?
+            +GetUserByIdAsync(int id) : Task~User?
+            +UpdateUserAsync(User user) : Task~User
+            +GetCustomersAsync(CustomerSearchRequest request) : 
+        }
+        class UserRepository <<Repository Implementation>> #F0FDF4 {
+            +AddUserAsync(User user) : Task~User
+            +GetUserByEmailAsync(string email) : Task~User?
+            +GetUserByIdAsync(int id) : Task~User?
+            +UpdateUserAsync(User user) : Task~User
+        }
+        interface IVehicleMaintenanceRepository <<Repository Interface>> #BBF7D0 {
+            +AddVehicleMaintenance(VehicleMaintenance vehicleMaintenance) : void
+            +GetAllVehicleMaintenances() : 
+            +GetVehicleMaintenanceById(int id) : Task~VehicleMaintenance?
+            +UpdateVehicleMaintenance(VehicleMaintenance vehicleMaintenance) : void
+            +DeleteVehicleMaintenance(VehicleMaintenance vehicleMaintenance) : void
+            +SearchVehicleMaintenances(MaintenanceSearchRequest request) : 
+            +GetMaintenanceStats(string groupBy, int? year) : Task~IReadOnlyCollection~MaintenanceStatsResponse
+        }
+        class VehicleMaintenanceRepository <<Repository Implementation>> #F0FDF4 {
+            +AddVehicleMaintenance(VehicleMaintenance vehicleMaintenance) : void
+            +UpdateVehicleMaintenance(VehicleMaintenance vehicleMaintenance) : void
+            +GetVehicleMaintenanceById(int id) : Task~VehicleMaintenance?
+            +DeleteVehicleMaintenance(VehicleMaintenance vehicleMaintenance) : void
+            +GetMaintenanceStats(string groupBy, int? year) : Task~IReadOnlyCollection~MaintenanceStatsResponse
+        }
+        interface IVehicleRepository <<Repository Interface>> #BBF7D0 {
+            +AddVehicle(Vehicle vehicle) : Task~int
+            +GetVehicleById(int id, bool includeTypes, bool includeImages, bool includeBrands) : Task~Vehicle?
+            +UpdateVehicle(Vehicle vehicle) : void
+            +SearchVehicles(VehicleSearchRequest request) : 
+            +GetAllVehicleBrands() : Task~IReadOnlyCollection~VehicleBrand
+            +GetAllVehicleTypes() : Task~IReadOnlyCollection~VehicleType
+            +AddVehicleImagesAsync(IEnumerable~VehicleImages~ vehicleImages) : void
+            +DeleteVehicleImagesByVehicleAsync(int vehicleId) : void
+            +GetVehicleImagesByVehicleIdAsync(int vehicleId) : Task~List~VehicleImages
+        }
+        class VehicleRepository <<Repository Implementation>> #F0FDF4 {
+            +AddVehicle(Vehicle vehicle) : Task~int
+            +GetVehicleById(int id, bool includeTypes, bool includeImages, bool includeBrands) : Task~Vehicle?
+            +UpdateVehicle(Vehicle vehicle) : void
+            +GetAllVehicleBrands() : Task~IReadOnlyCollection~VehicleBrand
+            +GetAllVehicleTypes() : Task~IReadOnlyCollection~VehicleType
+            +AddVehicleImagesAsync(IEnumerable~VehicleImages~ vehicleImages) : void
+            +DeleteVehicleImagesByVehicleAsync(int vehicleId) : void
+            +GetVehicleImagesByVehicleIdAsync(int vehicleId) : Task~List~VehicleImages
+        }
+        interface IVerificationCodeRepository <<Repository Interface>> #BBF7D0 {
+            +AddVerificationCode(VerificationCodes code) : void
+            +GetVerificationCode(int userId) : Task~VerificationCodes?
+            +GetVerificationCodeByCode(string code) : Task~VerificationCodes?
+        }
+        class VerificationCodeRepository <<Repository Implementation>> #F0FDF4 {
+            +AddVerificationCode(VerificationCodes code) : void
+            +UpdateVerificationCode(VerificationCodes code) : void
+            +GetVerificationCode(int userId) : Task~VerificationCodes?
+            +GetVerificationCodeByCode(string code) : Task~VerificationCodes?
+        }
+    }
+}
+
+' ========================================================
+' 3. INFRASTRUCTURE LAYER
+' ========================================================
+package "Infrastructure Layer" as INFRA #FEF3C7 {
+    package "Persistence" as INFRA_DB #FDE68A {
+        class AppDbContext <<Database Context>> #FEF08A {
+            +Users : DbSet~User
+            +Vehicles : DbSet~Vehicle
+            +VehicleBrands : DbSet~VehicleBrand
+            +VehicleTypes : DbSet~VehicleType
+            +VerificationCodes : DbSet~VerificationCodes
+            +Bookings : DbSet~Booking
+            +VehicleImages : DbSet~VehicleImages
+            +VehicleMaintenances : DbSet~VehicleMaintenance
+            +Payments : DbSet~Payments
+            +Reviews : DbSet~Review
+            +Drivers : DbSet~Driver
+            +DriverBookingCancellations : DbSet~DriverBookingCancellation
+            +ContactRequests : DbSet~ContactRequest
+        }
+    }
+
+    package "External Services" as INFRA_SERVICES #FDE68A {
+        interface IStorageService <<External Interface>> #FCD34D {
+            +UploadBlobAsync(IFormFile file, BlobType blobType, string connectionString, string fileName) : Task~string
+            +UploadBlobsAsync(List~IFormFile~ files, BlobType blobType, string connectionString) : Task~IEnumerable~string
+        }
+        class BlobService <<External Service>> #FEF9C3 {
+            +UploadBlobAsync(IFormFile file, BlobType blobType, string connectionString, string fileName) : Task~string
+            +UploadBlobsAsync(List~IFormFile~ files, BlobType blobType, string connectionString) : Task~IEnumerable~string
+        }
+        interface IEmailService <<External Interface>> #FCD34D {
+            +SendEmailAsync(MailSettings settings, EmailSendRequest emailSendRequest) : void
+        }
+        class EmailService <<External Service>> #FEF9C3 {
+            +SendEmailAsync(MailSettings settings, EmailSendRequest emailSendRequest) : void
+        }
+        interface IOAuthService <<External Interface>> #FCD34D {
+            +GetAuthorizeUrl() : string
+            +ExchangeCodeForTokenAsync(string code) : Task~TokenResponse
+            +GetUserInfoAsync(string accessToken) : Task~UserInfoResponse
+        }
+        class GoogleOAuthService <<External Service>> #FEF9C3 {
+            +GetAuthorizeUrl() : string
+            +ExchangeCodeForTokenAsync(string code) : Task~TokenResponse
+            +GetUserInfoAsync(string accessToken) : Task~UserInfoResponse
+        }
+        interface IImageCompressor <<External Interface>> #FCD34D {
+            +CompressAsync(IFormFile file) : Task~Stream
+        }
+        class ImageCompressor <<External Service>> #FEF9C3 {
+            +CompressAsync(IFormFile file) : Task~Stream
+        }
+        interface IRecommendationService <<External Interface>> #FCD34D {
+            +UpdateReview(int vehicleId) : void
+            +GetVehicleRecommendations(string query, int limit) : Task~RecommendationResponse?
+        }
+        class RecommendationService <<External Service>> #FEF9C3 {
+            +UpdateReview(int vehicleId) : void
+            +GetVehicleRecommendations(string query, int limit) : Task~RecommendationResponse?
+        }
+        interface IPaymentService <<External Interface>> #FCD34D {
+            +CreateCheckoutSession(ExternalPaymentRequest request) : Task~ExternalPaymentResponse
+            +IsPaid(string paymentOrSessionId) : 
+            +MakeRefund(RefundRequest refundRequest) : void
+        }
+        class StripeService <<External Service>> #FEF9C3 {
+            +CreateCheckoutSession(ExternalPaymentRequest request) : Task~ExternalPaymentResponse
+            +MakeRefund(RefundRequest refundRequest) : void
+        }
+    }
+}
+
+' ========================================================
+' 4. CORE / DOMAIN LAYER
+' ========================================================
+package "Core Layer (Domain)" as CORE #FDF2F8 {
+    package "Entities" as CORE_ENTITIES #FCE7F3 {
+        class User <<Entity>> #FDF4FF {
+            +Id : long
+            +FirstName : string
+            +LastName : string
+            +Email : string
+            +PhoneNumber : string?
+            +PasswordHash : string
+            +Role : UserRole
+            +Status : UserStatus
+            +ProfileImageUrl : string?
+            +Address : string?
+            +City : string?
+            +NicPassportNumber : string?
+            +EmailVerified : bool
+            +CreatedAt : DateTime
+            +UpdatedAt : DateTime
+        }
+        class Driver <<Entity>> #FDF4FF {
+            +Id : int
+            +UserId : long
+            +LicenseNumber : string
+            +LicenseExpiryDate : DateOnly
+            +YearsOfExperience : int
+            +DriverStatus : DriverStatus
+            +Availability : AvailabilityStatus
+            +LicenseDocumentUrl : string?
+            +AverageRating : decimal
+            +CompletedRides : int
+            +ApprovedBy : long?
+            +ApprovedAt : DateTime?
+            +CreatedAt : DateTime
+            +UpdatedAt : DateTime
+            +User : User
+            +ApprovedByUser : User?
+        }
+        class Booking <<Entity>> #FDF4FF {
+            +Id : int
+            +CustomerId : long
+            +VehicleId : int
+            +DriverId : int?
+            +BookingReference : string
+            +PickupLocation : string
+            +DropoffLocation : string?
+            +PickupDatetime : DateTime
+            +ReturnDatetime : DateTime
+            +RentalDays : int?
+            +EstimatedDistanceKm : decimal?
+            +WithDriver : bool
+            +BaseRentalCost : decimal
+            +DriverFee : decimal
+            +TaxAmount : decimal
+            +DiscountAmount : decimal
+            +TotalAmount : decimal
+            +SpecialNotes : string?
+            +BookingStatus : BookingStatus
+            +CancelledReason : string?
+            +CancelledAt : DateTime?
+            +ConfirmedAt : DateTime?
+            +CompletedAt : DateTime?
+            +CreatedAt : DateTime
+            +UpdatedAt : DateTime
+            +Customer : User
+            +Vehicle : Vehicle
+            +Driver : Driver?
+            +DriverCancellations : ICollection~DriverBookingCancellation
+        }
+        class Vehicle <<Entity>> #FDF4FF {
+            +Id : int
+            +BrandId : int?
+            +TypeId : int?
+            +Brand : VehicleBrand?
+            +Type : VehicleType?
+            +Model : string
+            +RegistrationNumber : string
+            +ManufactureYear : int
+            +Color : string?
+            +Transmission : TransmissionType?
+            +Fuel : FuelType?
+            +SeatCapacity : int?
+            +LuggageCapacity : int?
+            +DailyRentalPrice : decimal
+            +PricePerKm : decimal?
+            +Description : string?
+            +MainImageUrl : string?
+            +AirConditioned : bool
+            +HasBluetooth : bool
+            +HasGps : bool
+            +Status : VehicleStatus
+            +AverageRating : decimal
+            +TotalBookings : int
+            +CreatedBy : int?
+            +CreatedAt : DateTime
+            +UpdatedAt : DateTime
+            +IsDeleted : bool
+            +VehicleImages : List~VehicleImages~?
+        }
+        class VehicleBrand <<Entity>> #FDF4FF {
+            +Id : int
+            +Name : string
+            +CreatedAt : DateTime
+        }
+        class VehicleType <<Entity>> #FDF4FF {
+            +Id : int
+            +Name : string
+            +Description : string?
+            +CreatedAt : DateTime
+        }
+        class VehicleImages <<Entity>> #FDF4FF {
+            +Id : long
+            +VehicleId : int
+            +Vehicle : Vehicle
+            +ImageUrl : string
+            +CreatedAt : DateTime
+        }
+        class VehicleMaintenance <<Entity>> #FDF4FF {
+            +Id : int
+            +VehicleId : int
+            +Vehicle : Vehicle?
+            +MaintenanceStart : DateOnly
+            +MaintenanceEnd : DateOnly
+            +Description : string
+            +Cost : decimal
+            +Status : MaintenanceStatus
+            +CreatedAt : DateTime
+            +UpdatedAt : DateTime
+        }
+        class Payments <<Entity>> #FDF4FF {
+            +Id : long
+            +BookingId : long
+            +CustomerId : long
+            +TransactionReference : string?
+            +Amount : decimal
+            +PaymentMethod : PaymentMethod
+            +PaymentStatus : PaymentStatus
+            +PaymentGateway : string?
+            +PaidAt : DateTime?
+            +FailureReason : string?
+            +CreatedAt : DateTime
+        }
+        class Review <<Entity>> #FDF4FF {
+            +Id : int
+            +BookingId : int
+            +CustomerId : long
+            +VehicleId : int?
+            +DriverId : int?
+            +VehicleRating : int?
+            +DriverRating : int?
+            +Comment : string?
+            +CreatedAt : DateTime
+            +Booking : Booking
+            +Customer : User
+            +Vehicle : Vehicle?
+            +Driver : Driver?
+        }
+        class ContactRequest <<Entity>> #FDF4FF {
+            +Id : int
+            +UserId : long?
+            +Name : string
+            +Email : string
+            +Subject : string
+            +Message : string
+            +Status : string
+            +AdminNotes : string?
+            +CreatedAt : DateTime
+            +UpdatedAt : DateTime
+            +User : User?
+        }
+        class DriverBookingCancellation <<Entity>> #FDF4FF {
+            +Id : int
+            +BookingId : int
+            +DriverId : int
+            +CancellationReason : string?
+            +CancelledAt : DateTime
+            +CreatedAt : DateTime
+            +Booking : Booking
+            +Driver : Driver
+        }
+        class VerificationCodes <<Entity>> #FDF4FF {
+            +Id : int
+            +UserId : int
+            +VerificationCode : string
+            +IsUsed : bool
+            +ExpiresAt : DateTime
+        }
+    }
+
+    package "Enums" as CORE_ENUMS #FCE7F3 {
+        enum UserRole #FDF2F8 {
+            ADMIN
+            CUSTOMER
+            DRIVER
+        }
+        enum UserStatus #FDF2F8 {
+            ACTIVE
+            INACTIVE
+            SUSPENDED
+        }
+        enum BookingStatus #FDF2F8 {
+            PENDING
+            CONFIRMED
+            ONGOING
+            COMPLETED
+            CANCELLED
+            REJECTED
+        }
+        enum DriverStatus #FDF2F8 {
+            PENDING
+            APPROVED
+            REJECTED
+            DEACTIVATED
+        }
+        enum AvailabilityStatus #FDF2F8 {
+            AVAILABLE
+            UNAVAILABLE
+            ON_TRIP
+        }
+        enum VehicleStatus #FDF2F8 {
+            AVAILABLE
+            BOOKED
+            MAINTENANCE
+            UNAVAILABLE
+        }
+        enum MaintenanceStatus #FDF2F8 {
+            COMPLETED
+            UNDER_MAINTENANCE
+            DELETED
+        }
+        enum PaymentStatus #FDF2F8 {
+            PENDING
+            COMPLETED
+            FAILED
+            REFUNDED
+        }
+        enum PaymentMethod #FDF2F8 {
+            CARD
+            BANK_TRANSFER
+            ONLINE
+            CASH
+        }
+        enum FuelType #FDF2F8 {
+            PETROL
+            DIESEL
+            HYBRID
+            ELECTRIC
+        }
+        enum TransmissionType #FDF2F8 {
+            MANUAL
+            AUTOMATIC
+        }
+        enum BlobType #FDF2F8 {
+            VEHICLE
+            PROFILE
+            LICENSE
+        }
+        enum OAuthProvider #FDF2F8 {
+            GOOGLE
+            APPLE
+            FACEBOOK
+        }
+    }
+}
+
+' ========================================================
+' RELATIONSHIPS & DEPENDENCIES
+' ========================================================
+' --- API to Application Service Dependencies ---
+AuthController ..> IAuthService : uses
+BookingController ..> IBookingService : uses
+ContactController ..> IContactRequestService : uses
+DashboardController ..> IDashboardService : uses
+DriverController ..> IDriverService : uses
+StorageController ..> IStorageService : uses
+TestController ..> IEmailService : uses
+TestController ..> IPaymentService : uses
+UserController ..> IUserService : uses
+VehicleController ..> IVehicleService : uses
+VehicleController ..> IBookingService : uses
+VehicleController ..> IReviewService : uses
+VehicleMaintenanceController ..> IVehicleMaintenanceService : uses
+
+' --- Application Service Realizations (Implementations) ---
+IAuthService <|.. AuthService
+IBookingService <|.. BookingService
+IContactRequestService <|.. ContactRequestService
+IContextService <|.. ContextService
+IDashboardService <|.. DashboardService
+IDriverService <|.. DriverService
+IReviewService <|.. ReviewService
+IUserService <|.. UserService
+IVehicleMaintenanceService <|.. VehicleMaintenanceService
+IVehicleService <|.. VehicleService
+
+' --- Application Service Dependencies ---
+AuthService ..> IUserRepository : uses
+AuthService ..> IVerificationCodeRepository : uses
+AuthService ..> IEmailService : uses
+AuthService ..> IOAuthService : uses
+
+BookingService ..> IBookingRepository : uses
+BookingService ..> IVehicleRepository : uses
+BookingService ..> IDriverRepository : uses
+BookingService ..> IContextService : uses
+BookingService ..> IPaymentService : uses
+BookingService ..> IPaymentRepository : uses
+BookingService ..> IEmailService : uses
+BookingService ..> IUserRepository : uses
+
+ContactRequestService ..> IContactRequestRepository : uses
+ContactRequestService ..> IContextService : uses
+ContactRequestService ..> IEmailService : uses
+
+DashboardService ..> IDashboardRepository : uses
+
+DriverService ..> IDriverRepository : uses
+DriverService ..> IBookingRepository : uses
+DriverService ..> IUserRepository : uses
+DriverService ..> IContextService : uses
+DriverService ..> IEmailService : uses
+
+ReviewService ..> IReviewRepository : uses
+ReviewService ..> IVehicleRepository : uses
+ReviewService ..> IContextService : uses
+ReviewService ..> IBookingRepository : uses
+ReviewService ..> IRecommendationService : uses
+
+UserService ..> IUserRepository : uses
+UserService ..> IContextService : uses
+UserService ..> IStorageService : uses
+
+VehicleMaintenanceService ..> IVehicleMaintenanceRepository : uses
+VehicleMaintenanceService ..> IVehicleRepository : uses
+
+VehicleService ..> IVehicleRepository : uses
+VehicleService ..> IRecommendationService : uses
+
+' --- Application Repository Realizations (Implementations) ---
+IBookingRepository <|.. BookingRepository
+IContactRequestRepository <|.. ContactRequestRepository
+IDashboardRepository <|.. DashboardRepository
+IDriverRepository <|.. DriverRepository
+IPaymentRepository <|.. PaymentRepository
+IReviewRepository <|.. ReviewRepository
+IUserRepository <|.. UserRepository
+IVehicleMaintenanceRepository <|.. VehicleMaintenanceRepository
+IVehicleRepository <|.. VehicleRepository
+IVerificationCodeRepository <|.. VerificationCodeRepository
+
+' --- Repositories to Infrastructure DbContext ---
+BookingRepository ..> AppDbContext : uses
+ContactRequestRepository ..> AppDbContext : uses
+DashboardRepository ..> AppDbContext : uses
+DriverRepository ..> AppDbContext : uses
+PaymentRepository ..> AppDbContext : uses
+ReviewRepository ..> AppDbContext : uses
+UserRepository ..> AppDbContext : uses
+VehicleMaintenanceRepository ..> AppDbContext : uses
+VehicleRepository ..> AppDbContext : uses
+VerificationCodeRepository ..> AppDbContext : uses
+
+' --- Infrastructure Service Realizations & Dependencies ---
+IStorageService <|.. BlobService
+IEmailService <|.. EmailService
+IOAuthService <|.. GoogleOAuthService
+IImageCompressor <|.. ImageCompressor
+IRecommendationService <|.. RecommendationService
+IPaymentService <|.. StripeService
+BlobService ..> IImageCompressor : uses
+
+' --- AppDbContext to Core Entities ---
+AppDbContext --> User
+AppDbContext --> Vehicle
+AppDbContext --> VehicleBrand
+AppDbContext --> VehicleType
+AppDbContext --> VerificationCodes
+AppDbContext --> Booking
+AppDbContext --> VehicleImages
+AppDbContext --> VehicleMaintenance
+AppDbContext --> Payments
+AppDbContext --> Review
+AppDbContext --> Driver
+AppDbContext --> DriverBookingCancellation
+AppDbContext --> ContactRequest
+
+' --- Entity Domain Relationships ---
+Booking "0..*" --> "1" User : Customer
+Booking "0..*" --> "1" Vehicle : Vehicle
+Booking "0..*" --> "0..1" Driver : Driver
+Booking "1" *-- "0..*" DriverBookingCancellation
+Driver "1" --> "1" User : User
+Driver "0..*" --> "0..1" User : ApprovedByUser
+DriverBookingCancellation "0..*" --> "1" Driver
+Payments "0..*" --> "1" Booking
+Review "0..*" --> "1" Booking
+Review "0..*" --> "1" User : Customer
+Review "0..*" --> "0..1" Vehicle
+Review "0..*" --> "0..1" Driver
+Vehicle "0..*" --> "0..1" VehicleBrand
+Vehicle "0..*" --> "0..1" VehicleType
+Vehicle "1" *-- "0..*" VehicleImages
+VehicleMaintenance "0..*" --> "1" Vehicle
+ContactRequest "0..*" --> "0..1" User
+VerificationCodes "0..*" --> "1" User
+
+@enduml
