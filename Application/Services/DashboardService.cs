@@ -17,4 +17,9 @@ public class DashboardService : IDashboardService
     {
         return await _repository.GetDashboardStatsAsync();
     }
+    
+    public async Task<PublicStatsResponse> GetPublicStatsAsync()
+    {
+        return await _repository.GetPublicStatsAsync();
+    }
 }

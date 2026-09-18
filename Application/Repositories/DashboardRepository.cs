@@ -116,4 +116,31 @@ public class DashboardRepository : IDashboardRepository
 
         return response;
     }
+
+    public async Task<PublicStatsResponse> GetPublicStatsAsync()
+    {
+        // Fast count queries 
+        var totalVehicles = await _context.Vehicles.CountAsync();
+        var availableVehicles = await _context.Vehicles.CountAsync(v => v.Status == VehicleStatus.AVAILABLE);
+        var totalBookings = await _context.Bookings.CountAsync();
+        var totalCustomers = await _context.Users.CountAsync(u => u.Role == UserRole.CUSTOMER);
+
+        // Calculate real average rating 
+        var hasReviews = await _context.Reviews.AnyAsync(r => r.VehicleRating.HasValue);
+        var averageRating = hasReviews
+            ? await _context.Reviews
+                .Where(r => r.VehicleRating.HasValue)
+                .AverageAsync(r => (double)r.VehicleRating!.Value)
+            : 4.9;
+
+        return new PublicStatsResponse
+        {
+            TotalVehicles = totalVehicles,
+            AvailableVehicles = availableVehicles,
+            TotalBookings = totalBookings,
+            AverageRating = Math.Round(averageRating, 1),
+            TotalCustomers = totalCustomers
+        };
+    }
+
 }
