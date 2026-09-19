@@ -1,0 +1,57 @@
+services:
+  - type: web
+    name: shanenterprises-backend
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: free
+    branch: release
+    autoDeploy: false
+    healthCheckPath: /status
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: EnableSwagger
+        value: "true"
+      - key: AppSettings__DefaultConnection
+        sync: false
+      - key: AppSettings__AdminKeyCode
+        value: "8JH&@HGB5"
+      - key: AppSettings__BlobConnectionString
+        sync: false
+      - key: AppSettings__JwtSettings__Issuer
+        value: "ShanEnterprises"
+      - key: AppSettings__JwtSettings__Audience
+        value: "ShanEnterprises"
+      - key: AppSettings__JwtSettings__SecurityKey
+        sync: false
+      - key: AppSettings__RatingUrl
+        value: "https://shanenterprises-customer.vercel.app/review/"
+      - key: AppSettings__BookingsUrl
+        value: "https://shanenterprises-customer.vercel.app/bookings"
+      - key: AppSettings__RecommendationServiceUrl
+        value: "https://shanrecommendation-d2fmdehtace5d7ch.canadacentral-01.azurewebsites.net/api/"
+      - key: AppSettings__RecommendationServiceApiKey
+        sync: false
+      - key: AppSettings__MailSettings__Server
+        value: "smtp.gmail.com"
+      - key: AppSettings__MailSettings__Port
+        value: "587"
+      - key: AppSettings__MailSettings__SenderEmail
+        sync: false
+      - key: AppSettings__MailSettings__Password
+        sync: false
+      - key: AppSettings__Google__ClientId
+        sync: false
+      - key: AppSettings__Google__ClientSecret
+        sync: false
+      - key: AppSettings__Google__Scopes
+        value: "openid profile email"
+      - key: AppSettings__Google__CallbackUrl
+        value: "https://shanenterprises-customer.vercel.app/login"
+      - key: AppSettings__StripeConfigs__PublicKey
+        sync: false
+      - key: AppSettings__StripeConfigs__SecretKey
+        sync: false
+      - key: AppSettings__StripeConfigs__RedirectUri
+        value: "https://shanenterprises-customer.vercel.app/paymentresult"

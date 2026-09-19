@@ -1,0 +1,56 @@
+name: Deploy Backend to Render
+
+on:
+  push:
+    branches:
+      - release
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    name: Build & Trigger Render Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore Dependencies
+        run: dotnet restore API/API.csproj
+
+      - name: Verify Build
+        run: dotnet build API/API.csproj -c Release --no-restore
+
+      - name: Trigger Render Deployment via Deploy Hook
+        env:
+          DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+        run: |
+          if [ -z "$DEPLOY_HOOK_URL" ]; then
+            echo "::error::RENDER_DEPLOY_HOOK_URL secret is not configured in GitHub Secrets!"
+            echo "To configure:"
+            echo "1. Go to your Render Dashboard -> Select your Web Service"
+            echo "2. Go to Settings -> Scroll to 'Deploy Hook'"
+            echo "3. Copy the URL (format: https://api.render.com/deploy/srv-xxxx?key=yyyy)"
+            echo "4. In GitHub: Settings -> Secrets and variables -> Actions -> Add RENDER_DEPLOY_HOOK_URL"
+            exit 1
+          fi
+
+          echo "Triggering Render deployment..."
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST "$DEPLOY_HOOK_URL")
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | sed '$d')
+
+          echo "HTTP Status: $HTTP_CODE"
+          echo "Response: $BODY"
+
+          if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
+            echo "Deployment successfully triggered on Render!"
+          else
+            echo "::error::Failed to trigger deployment on Render (HTTP $HTTP_CODE): $BODY"
+            exit 1
+          fi
