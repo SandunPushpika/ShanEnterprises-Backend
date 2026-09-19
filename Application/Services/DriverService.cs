@@ -67,10 +67,6 @@ public class DriverService : IDriverService
         if (driver == null)
             throw new NotFoundException($"Driver with id {driverId} not found.");
 
-        if (driver.DriverStatus != DriverStatus.PENDING)
-            throw new FailedOperationException(
-                $"Only PENDING requests can be approved. Current status: {driver.DriverStatus}.");
-
         var admin = await _context.GetUser();
 
         driver.DriverStatus = DriverStatus.APPROVED;
@@ -124,6 +120,7 @@ public class DriverService : IDriverService
 
         driver.UpdatedAt = DateTime.UtcNow;
         driver.CreatedAt = DateTime.SpecifyKind(driver.CreatedAt, DateTimeKind.Utc);
+        driver.ApprovedAt = driver.ApprovedAt != null ? DateTime.SpecifyKind((DateTime)driver.ApprovedAt, DateTimeKind.Utc) : null;
 
         // Revert user role to CUSTOMER if deactivated
         if (driver.DriverStatus == DriverStatus.DEACTIVATED)
@@ -140,6 +137,7 @@ public class DriverService : IDriverService
                 {
                     user.Role = UserRole.CUSTOMER;
                     user.UpdatedAt = DateTime.UtcNow;
+                    user.CreatedAt = DateTime.SpecifyKind(driver.CreatedAt, DateTimeKind.Utc);
                     await _userRepository.UpdateUserAsync(user);
                 }
             }
