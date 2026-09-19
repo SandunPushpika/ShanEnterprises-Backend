@@ -99,7 +99,7 @@ public class VehicleRepository : IVehicleRepository
         var pageNumber = request.PageNumber < 1 ? 1 : request.PageNumber;
         var pageSize = request.PageSize < 1 ? 10 : request.PageSize;
         var vehicles = await query
-            .OrderBy(v => v.Id)
+            .OrderByDescending(v => v.Id)
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
