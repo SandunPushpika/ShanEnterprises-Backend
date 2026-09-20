@@ -1,4 +1,5 @@
 using Core.DTOs.Request.Driver;
+using Core.DTOs.Response;
 using Core.Entities;
 
 namespace Application.Interfaces.Repositories;
@@ -15,4 +16,6 @@ public interface IDriverRepository
     Task<IReadOnlyCollection<Booking>> GetDriverTripsAsync(int driverId);
     Task<(IReadOnlyCollection<Booking> Trips, int Total)> GetDriverTripsPaginatedAsync(int driverId, int pageNumber, int pageSize);
     Task AddDriverBookingCancellationAsync(DriverBookingCancellation cancellation);
+    Task<DriverStatsResponse> GetDriverStatsAsync();
 }
+

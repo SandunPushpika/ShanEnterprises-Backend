@@ -3,6 +3,7 @@ using Core.Entities;
 using Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
 using Core.DTOs.Request;
+using Core.DTOs.Response;
 using System.Linq;
 using Core.Enums;
 using Microsoft.AspNetCore.Http;
@@ -77,7 +78,8 @@ public class VehicleRepository : IVehicleRepository
         {
             query = query.Where(v =>
                 (v.Brand != null && EF.Functions.ILike(v.Brand.Name, $"%{request.Search}%")) ||
-                EF.Functions.ILike(v.Model, $"%{request.Search}%"));
+                EF.Functions.ILike(v.Model, $"%{request.Search}%") ||
+                EF.Functions.ILike(v.RegistrationNumber, $"%{request.Search}%"));
         }
         if(request.VehicleIds != null && request.VehicleIds.Any())
             query = query.Where(v => request.VehicleIds.Contains(v.Id));
@@ -107,7 +109,20 @@ public class VehicleRepository : IVehicleRepository
         return (vehicles, total);
     }
 
+    public async Task<VehicleStatsResponse> GetVehicleStatsAsync()
+    {
+        return new VehicleStatsResponse
+        {
+            Total = await context.Vehicles.CountAsync(v => !v.IsDeleted),
+            Available = await context.Vehicles.CountAsync(v => !v.IsDeleted && v.Status == VehicleStatus.AVAILABLE),
+            Rented = await context.Vehicles.CountAsync(v => !v.IsDeleted && v.Status == VehicleStatus.BOOKED),
+            Maintenance = await context.Vehicles.CountAsync(v => !v.IsDeleted && v.Status == VehicleStatus.MAINTENANCE),
+            Unavailable = await context.Vehicles.CountAsync(v => !v.IsDeleted && v.Status == VehicleStatus.UNAVAILABLE)
+        };
+    }
+
     public async Task<IReadOnlyCollection<VehicleBrand>> GetAllVehicleBrands()
+
     {
         var result = await context.VehicleBrands.ToListAsync();
         return result;

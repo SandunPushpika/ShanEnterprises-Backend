@@ -37,6 +37,15 @@ public class BookingController : ControllerBase
         return new ApiResponse(data: result);
     }
 
+    [CustomAuthorize(UserRole.ADMIN)]
+    [HttpGet("stats")]
+    public async Task<ActionResult<ApiResponse>> GetBookingStats()
+    {
+        var result = await _bookingService.GetBookingStatsAsync();
+        return new ApiResponse(data: result);
+    }
+
+
     [HttpPost("user-booking")]
     public async Task<ActionResult<ApiResponse>> GetBookingsForUser([FromBody] BookingSearchRequest request)
     {

@@ -180,4 +180,8 @@ public class UserService : IUserService
         return _mapper.Map<UserResponse>(user);
     }
 
+    public async Task<CustomerStatsResponse> GetCustomerStatsAsync()
+    {
+        return await _userRepository.GetCustomerStatsAsync();
+    }
 }

@@ -1,5 +1,6 @@
 using Core.Entities;
 using Core.DTOs.Request;
+using Core.DTOs.Response;
 using System.Collections.Generic;
 
 namespace Application.Interfaces.Repositories;
@@ -15,4 +16,5 @@ public interface IVehicleRepository
     Task AddVehicleImagesAsync(IEnumerable<VehicleImages> vehicleImages);
     Task DeleteVehicleImagesByVehicleAsync(int vehicleId);
     Task<List<VehicleImages>> GetVehicleImagesByVehicleIdAsync(int vehicleId);
+    Task<VehicleStatsResponse> GetVehicleStatsAsync();
 }

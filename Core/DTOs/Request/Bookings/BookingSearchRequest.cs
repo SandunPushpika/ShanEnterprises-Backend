@@ -16,4 +16,6 @@ public class BookingSearchRequest
     public DateTime? PickupTo { get; set; }
     public DateTime? ReturnFrom { get; set; }
     public DateTime? ReturnTo { get; set; }
+    public string? Search { get; set; }
 }
+

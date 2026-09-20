@@ -19,4 +19,5 @@ public interface IBookingRepository
     Task SaveAsync();
     Task<Booking> GetBookingByVehicleIdAndUserId(int vehicleId, int userId,
         BookingStatus status = BookingStatus.COMPLETED);
+    Task<BookingStatsResponse> GetBookingStatsAsync();
 }

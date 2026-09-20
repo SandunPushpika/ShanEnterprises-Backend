@@ -52,6 +52,14 @@ public class DriverController : ControllerBase
         return new ApiResponse(data: result);
     }
 
+    [CustomAuthorize(UserRole.ADMIN)]
+    [HttpGet("stats")]
+    public async Task<ActionResult<ApiResponse>> GetDriverStats()
+    {
+        var result = await _driverService.GetDriverStatsAsync();
+        return new ApiResponse(data: result);
+    }
+    
     [HttpGet("my-status")]
     public async Task<ActionResult<ApiResponse>> GetMyDriverStatus()
     {

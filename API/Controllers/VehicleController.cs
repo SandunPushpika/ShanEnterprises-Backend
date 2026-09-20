@@ -52,8 +52,17 @@ public class VehicleController:Controller
         var result = await _vehicleService.SearchVehicles(request);
         return new ApiResponse(data: result);
     }
+
+    [CustomAuthorize(UserRole.ADMIN)]
+    [HttpGet("stats")]
+    public async Task<ActionResult<ApiResponse>> GetVehicleStats()
+    {
+        var result = await _vehicleService.GetVehicleStatsAsync();
+        return new ApiResponse(data: result);
+    }
     
     [AllowAnonymous]
+
     [HttpGet("brands")]
     public async Task<ActionResult<ApiResponse>> GetVehicleBrands()
     {

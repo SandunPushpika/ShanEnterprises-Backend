@@ -1,5 +1,6 @@
 using Application.Interfaces.Repositories;
 using Core.DTOs.Request.Driver;
+using Core.DTOs.Response;
 using Core.Entities;
 using Core.Enums;
 using Infrastructure.Database;
@@ -53,7 +54,34 @@ public class DriverRepository(AppDbContext context) : IDriverRepository
             .AsQueryable();
 
         if (request.Status.HasValue)
+        {
             query = query.Where(d => d.DriverStatus == request.Status.Value);
+        }
+        else if (!string.IsNullOrWhiteSpace(request.StatusFilter) && !request.StatusFilter.Equals("ALL", StringComparison.OrdinalIgnoreCase))
+        {
+            if (request.StatusFilter.Equals("BLOCKED", StringComparison.OrdinalIgnoreCase))
+            {
+                query = query.Where(d => d.DriverStatus == DriverStatus.REJECTED || d.DriverStatus == DriverStatus.DEACTIVATED);
+            }
+            else if (Enum.TryParse<DriverStatus>(request.StatusFilter, true, out var parsedStatus))
+            {
+                query = query.Where(d => d.DriverStatus == parsedStatus);
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.Search))
+        {
+            var s = request.Search.Trim();
+            query = query.Where(d =>
+                (d.User != null && (
+                    EF.Functions.ILike(d.User.FirstName, $"%{s}%") ||
+                    EF.Functions.ILike(d.User.LastName, $"%{s}%") ||
+                    EF.Functions.ILike(d.User.Email, $"%{s}%") ||
+                    (d.User.PhoneNumber != null && EF.Functions.ILike(d.User.PhoneNumber, $"%{s}%"))
+                )) ||
+                EF.Functions.ILike(d.LicenseNumber, $"%{s}%")
+            );
+        }
 
         var total = await query.CountAsync();
         var pageNumber = request.PageNumber < 1 ? 1 : request.PageNumber;
@@ -67,6 +95,18 @@ public class DriverRepository(AppDbContext context) : IDriverRepository
 
         return (drivers, total);
     }
+
+    public async Task<DriverStatsResponse> GetDriverStatsAsync()
+    {
+        return new DriverStatsResponse
+        {
+            Total = await context.Drivers.CountAsync(),
+            Pending = await context.Drivers.CountAsync(d => d.DriverStatus == DriverStatus.PENDING),
+            Approved = await context.Drivers.CountAsync(d => d.DriverStatus == DriverStatus.APPROVED),
+            Blocked = await context.Drivers.CountAsync(d => d.DriverStatus == DriverStatus.REJECTED || d.DriverStatus == DriverStatus.DEACTIVATED)
+        };
+    }
+
 
     public async Task<IReadOnlyCollection<Driver>> GetAvailableDriversAsync(
         DateTime pickupDatetime, DateTime returnDatetime)

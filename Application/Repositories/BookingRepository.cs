@@ -97,6 +97,25 @@ public class BookingRepository(AppDbContext context) : IBookingRepository
             query = query.Where(b => b.BookingReference.Contains(request.BookingReference));
         }
 
+        if (!string.IsNullOrWhiteSpace(request.Search))
+        {
+            var s = request.Search.Trim();
+            query = query.Where(b =>
+                (b.BookingReference != null && EF.Functions.ILike(b.BookingReference, $"%{s}%")) ||
+                (b.Customer != null && (
+                    EF.Functions.ILike(b.Customer.FirstName, $"%{s}%") ||
+                    EF.Functions.ILike(b.Customer.LastName, $"%{s}%") ||
+                    EF.Functions.ILike(b.Customer.Email, $"%{s}%")
+                )) ||
+                (b.Vehicle != null && (
+                    EF.Functions.ILike(b.Vehicle.Model, $"%{s}%") ||
+                    EF.Functions.ILike(b.Vehicle.RegistrationNumber, $"%{s}%")
+                )) ||
+                (b.PickupLocation != null && EF.Functions.ILike(b.PickupLocation, $"%{s}%")) ||
+                (b.DropoffLocation != null && EF.Functions.ILike(b.DropoffLocation, $"%{s}%"))
+            );
+        }
+
         if (request.PickupFrom.HasValue)
         {
             query = query.Where(b => b.PickupDatetime >= request.PickupFrom.Value);
@@ -127,6 +146,19 @@ public class BookingRepository(AppDbContext context) : IBookingRepository
 
         return (bookings, total);
     }
+
+    public async Task<BookingStatsResponse> GetBookingStatsAsync()
+    {
+        return new BookingStatsResponse
+        {
+            Total = await context.Bookings.CountAsync(),
+            Confirmed = await context.Bookings.CountAsync(b => b.BookingStatus == BookingStatus.CONFIRMED),
+            Completed = await context.Bookings.CountAsync(b => b.BookingStatus == BookingStatus.COMPLETED),
+            Pending = await context.Bookings.CountAsync(b => b.BookingStatus == BookingStatus.PENDING),
+            Cancelled = await context.Bookings.CountAsync(b => b.BookingStatus == BookingStatus.CANCELLED || b.BookingStatus == BookingStatus.REJECTED)
+        };
+    }
+
 
     public async Task DeleteBooking(Booking booking)
     {

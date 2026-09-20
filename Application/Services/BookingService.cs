@@ -135,8 +135,14 @@ public class BookingService : IBookingService
             PageSize   = request.PageSize
         };
     }
+
+    public async Task<BookingStatsResponse> GetBookingStatsAsync()
+    {
+        return await _repository.GetBookingStatsAsync();
+    }
     
     public Task UpdateBookingStatus(int id, BookingStatusUpdatRequest request)
+
     {
         throw new NotImplementedException();
     }

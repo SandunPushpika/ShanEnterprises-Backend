@@ -5,6 +5,9 @@ namespace Core.DTOs.Request.Driver;
 public class DriverSearchRequest
 {
     public DriverStatus? Status { get; set; }
+    public string? StatusFilter { get; set; }
+    public string? Search { get; set; }
     public int PageNumber { get; set; } = 1;
     public int PageSize { get; set; } = 10;
 }
+

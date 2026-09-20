@@ -79,6 +79,14 @@ public class UserController : ControllerBase
     }
     
     [CustomAuthorize(UserRole.ADMIN)]
+    [HttpGet("customers/stats")]
+    public async Task<ActionResult<ApiResponse>> GetCustomerStats()
+    {
+        var stats = await _userService.GetCustomerStatsAsync();
+        return new ApiResponse(data: stats);
+    }
+
+    [CustomAuthorize(UserRole.ADMIN)]
     [HttpPut("{userId}/status")]
     public async Task<ActionResult<ApiResponse>> UpdateCustomerStatus(long userId, [FromBody] CustomerStatusUpdateRequest request)
     {

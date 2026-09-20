@@ -15,4 +15,6 @@ public interface IDriverService
     Task<SearchResponse<BookingReadResponse>> GetMyTripsAsync(int pageNumber = 1, int pageSize = 10);
     Task<SearchResponse<BookingReadResponse>> GetDriverTripsAsync(int driverId, int pageNumber = 1, int pageSize = 10);
     Task<DriverTripCancelResponse> CancelTripAssignmentAsync(int bookingId);
+    Task<DriverStatsResponse> GetDriverStatsAsync();
 }
+

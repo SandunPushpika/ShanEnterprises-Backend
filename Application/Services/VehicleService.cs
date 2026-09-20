@@ -192,6 +192,11 @@ public class VehicleService : IVehicleService
             PageSize = request.PageSize
         };
     }
+
+    public async Task<VehicleStatsResponse> GetVehicleStatsAsync()
+    {
+        return await _repository.GetVehicleStatsAsync();
+    }
     
     #endregion
 }

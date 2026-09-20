@@ -16,4 +16,5 @@ public interface IUserService
     Task<UserResponse> RemoveProfileImageAsync();
     Task<SearchResponse<UserResponse>> GetCustomersAsync(CustomerSearchRequest request);
     Task<UserResponse> UpdateUserStatusAsync(long userId, UserStatus status);
+    Task<CustomerStatsResponse> GetCustomerStatsAsync();
 }

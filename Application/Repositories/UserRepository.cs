@@ -39,26 +39,48 @@ public class UserRepository(AppDbContext context) : IUserRepository
         var query = context.Users.Where(x => x.Role == UserRole.CUSTOMER);
         if (request.Status.HasValue)
         {
-            query = query.Where(x => x.Status == request.Status.Value);
+            if (request.Status.Value == UserStatus.INACTIVE)
+            {
+                query = query.Where(x => x.Status == UserStatus.INACTIVE || x.Status == UserStatus.SUSPENDED);
+            }
+            else
+            {
+                query = query.Where(x => x.Status == request.Status.Value);
+            }
         }
         
         if (!string.IsNullOrWhiteSpace(request.SearchTerm))
         {
-            var term = request.SearchTerm.Trim().ToLower();
+            var term = request.SearchTerm.Trim();
             query = query.Where(x =>
-                x.FirstName.ToLower().Contains(term) ||
-                x.LastName.ToLower().Contains(term) ||
-                x.Email.ToLower().Contains(term) ||
-                (x.PhoneNumber != null && x.PhoneNumber.Contains(term)) ||
-                (x.NicPassportNumber != null && x.NicPassportNumber.ToLower().Contains(term)));
+                EF.Functions.ILike(x.FirstName, $"%{term}%") ||
+                EF.Functions.ILike(x.LastName, $"%{term}%") ||
+                EF.Functions.ILike(x.Email, $"%{term}%") ||
+                (x.PhoneNumber != null && EF.Functions.ILike(x.PhoneNumber, $"%{term}%")) ||
+                (x.NicPassportNumber != null && EF.Functions.ILike(x.NicPassportNumber, $"%{term}%")));
         }
         var total = await query.CountAsync();
+        var pageNumber = request.PageNumber < 1 ? 1 : request.PageNumber;
+        var pageSize = request.PageSize < 1 ? 8 : request.PageSize;
         var users = await query
             .OrderByDescending(x => x.CreatedAt)
-            .Skip((request.PageNumber - 1) * request.PageSize)
-            .Take(request.PageSize)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
             .ToListAsync();
         return (users, total);
+    }
+
+    public async Task<CustomerStatsResponse> GetCustomerStatsAsync()
+    {
+        var baseQuery = context.Users.Where(x => x.Role == UserRole.CUSTOMER);
+
+        return new CustomerStatsResponse
+        {
+            Total = await baseQuery.CountAsync(),
+            Active = await baseQuery.CountAsync(x => x.Status == UserStatus.ACTIVE),
+            Inactive = await baseQuery.CountAsync(x => x.Status == UserStatus.INACTIVE || x.Status == UserStatus.SUSPENDED),
+            Verified = await baseQuery.CountAsync(x => x.EmailVerified)
+        };
     }
 }
     

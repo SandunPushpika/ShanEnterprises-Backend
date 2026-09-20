@@ -160,7 +160,13 @@ public class DriverService : IDriverService
         };
     }
 
+    public async Task<DriverStatsResponse> GetDriverStatsAsync()
+    {
+        return await _repository.GetDriverStatsAsync();
+    }
+
     public async Task<DriverStatusResponse> GetMyDriverStatusAsync()
+
     {
         var user   = await _context.GetUser();
         var driver = await _repository.GetDriverByUserIdAsync(user.Id);
