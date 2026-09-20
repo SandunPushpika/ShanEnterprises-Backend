@@ -15,4 +15,6 @@ public interface IReviewService
     Task<SearchResponse<ReviewResponse>> GetReviews(int vehicleId, SearchRequest request);
     
     Task DeleteReview(int reviewId);
+
+    Task<ReviewResponse> GetSingleReview();
 }

@@ -26,4 +26,7 @@ public interface IReviewRepository
         int pageSize = 10);
 
     Task<Review?> DeleteReview(int reviewId);
+    Task<Review?> GetSingleReview();
+
+    Task<Review> GetReviewByCustomerAndVehicle(long customer, int vehicleId);
 }

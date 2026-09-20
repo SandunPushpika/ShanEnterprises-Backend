@@ -105,7 +105,7 @@ public class ReviewService : IReviewService
                 ReviewId = null
             };
 
-        var review = await _reviewRepository.GetReviewByBookingId(booking.Id);
+        var review = await _reviewRepository.GetReviewByCustomerAndVehicle(user.Id, vehicleId);
         if (review == null)
             return new UserReviewResponse()
             {
@@ -150,5 +150,11 @@ public class ReviewService : IReviewService
             return;
         
         await _recommendationService.UpdateReview((int) review.VehicleId);
+    }
+
+    public async Task<ReviewResponse> GetSingleReview()
+    {
+        var review = await _reviewRepository.GetSingleReview();
+        return _mapper.Map<ReviewResponse>(review);
     }
 }

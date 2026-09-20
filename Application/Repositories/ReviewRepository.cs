@@ -60,6 +60,14 @@ public class ReviewRepository(AppDbContext context) : IReviewRepository
             .FirstOrDefaultAsync();
         return review;
     }
+    
+    public async Task<Review> GetReviewByCustomerAndVehicle(long customer, int vehicleId)
+    {
+        var review = await context.Reviews
+            .Where(r => r.CustomerId == customer && r.VehicleId == vehicleId)
+            .FirstOrDefaultAsync();
+        return review;
+    }
 
     public async Task<SearchResponse<Review>> GetReviewsByVehicleId(
         int vehicleId,
@@ -94,5 +102,10 @@ public class ReviewRepository(AppDbContext context) : IReviewRepository
         await context.SaveChangesAsync();
         
         return review;
+    }
+
+    public async Task<Review?> GetSingleReview()
+    {
+        return await context.Reviews.Where(r => r.VehicleRating == 5).FirstOrDefaultAsync();
     }
 }

@@ -148,4 +148,12 @@ public class VehicleController:Controller
         var msg = request.MakeUnavailable ? "Vehicle marked as unavailable." : "Vehicle marked as available.";
         return new ApiResponse(msg);
     }
+
+    [AllowAnonymous]
+    [HttpGet("single-review")]
+    public async Task<ActionResult<ApiResponse>> GetSingleReview()
+    {
+        var res = await _reviewService.GetSingleReview();
+        return new ApiResponse(data: res);
+    }
 }
